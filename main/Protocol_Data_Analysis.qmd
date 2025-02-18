@@ -1,0 +1,384 @@
+---
+title: "Data Processing"
+authors: "Marco D'Agostino, Lei Ding"
+toc: true
+format: 
+  html:
+    html-math-method: mathjax
+    code-fold: false
+    # code-summary: "Show code"
+    code-tools: true
+    code-overflow: wrap
+    self-contained: false
+    theme: zephyr
+editor: source
+---
+
+## 0) Set up the notebook
+
+### Loading libraries and defining paths
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+rm(list=ls())                                               # clean workspace
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # Set working directory to the current file
+
+# LOAD LIBRARIES
+library(SciViews)
+library(ggplot2)
+library(pander)
+library(dplyr)
+library(tidyverse)
+library(data.table)
+library(anytime)
+library(ggthemes)
+
+# LOAD UTILITARY FUNCTIONS
+source("../src/Data_Preparation.R")  # Contains functions to extract data from raw files
+source("../src/LWP_algorithm.R")     # Contains the code of the LWP cleaning algorithm
+
+# SET DIRECTORIES
+ExperimentID    <- "Protocol_maize"
+
+data_path_clean <- paste0("../data/experiments/", ExperimentID, "/clean/") # Set path to Clean folder
+data_path_raw   <- paste0("../data/experiments/", ExperimentID, "/raw/")   # Set path to row folder
+plot_path       <- paste0("../plots/", ExperimentID,"/")                   # Set path to plot folder
+
+path_LWP        <- paste0(data_path_raw, "LWP/")
+path_SWP        <- paste0(data_path_raw, "SWP/")
+path_weight     <- paste0(data_path_raw, "weight/")
+```
+
+Define a custom theme for plots
+
+```{r, echo=FALSE, results='hide'}
+my_theme <- ggthemes::theme_few() +
+  theme(
+    text = element_text(size = 11),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(size = 12, hjust = 0.5),
+    legend.position = "none"
+  )
+```
+
+### Load Metadata
+
+Load metadata about the experiment (Plant_IDs, treatments, etc).
+
+NB : I created a Plants_ID file to be consistent with the design of the project.
+
+```{r}
+# Metadata <- read.csv(file = paste0(data_path_clean, "metadata.csv"))
+
+# Plants_ID <- Plants %>% 
+#   mutate(Plant_ID = Plant) 
+# Plants_ID <- Plants_ID[c("Plant_ID", "PSY", "Teros", "Treatment")]
+# write.csv(x = Plants_ID, file = paste0(data_path_clean, "Plants_ID.csv"), row.names = F)
+
+Plants_ID <- read.csv(paste0(data_path_clean, "Plants_ID.csv"))
+```
+
+## 1) Load LWP data
+
+### Extract from raw files
+
+Leaf Water Potential data from psychrometers are stored in separated `.csv` files.
+
+We use the custom function `load_LWP` to load and process each csv file in the provided path.
+
+The result is a single table containing Date, Time, LWP value and the ID of plants.
+
+The single file is writen as `LWP_raw.csv` in the raw folder.
+
+```{r, eval=FALSE}
+# Compile all PSY files into one dataframe
+LWP_raw <- load_LWP(path = path_LWP)
+
+# Change the PSY id by Plant_ID
+LWP_raw <- left_join(LWP_raw, Plants_ID[c("Plant_ID", "PSY")]) %>%
+  select(-c("PSY"))
+
+head(LWP_raw)
+
+# Write to raw folder
+write.csv(x = LWP_raw, file = paste0(data_path_raw, "LWP_raw.csv"), row.names = F)
+```
+
+### Load compiled raw file
+
+Once the raw files are compiled, we can simply load the processed csv file.
+
+```{r, message=FALSE, warning=FALSE}
+# Load from Raw folder
+LWP_raw <- read.csv(paste0(data_path_raw, "LWP_raw.csv")) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+p1 <- ggplot(left_join(LWP_raw, Plants_ID, by = "Plant_ID")) + 
+  
+  geom_line(aes(x = DateTime, 
+                y = LWP, 
+                color = Treatment,
+                group = Plant_ID)) +
+  
+  ylim(-1.5, 0) +
+  
+  ylab("Leaf Water Potantial [MPa]") +
+  
+  facet_wrap(~Plant_ID, 
+             # scales = "free_y",
+             ncol = 2) +
+  
+  theme_few() + theme(axis.text.x = element_text(angle = 90)) 
+  # my_theme +
+  # theme(strip.text.x = element_blank())
+  # ggtitle("Clean LWP")
+
+p1
+ggsave(filename = "LWP_raw.png", plot = p1, device = "png", path = plot_path, width = 9, height = 4)
+```
+
+### Clean raw file with cleaning algorithm and write clean file.
+
+We see that data is messy, so we implemented an algorithm to clean LWP data. It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.
+
+-   `check.na` evaluates how many NAN are in the buffer. If there is more NAN than the `nan.th` proportion, the buffer is discarded.
+
+-   `check.zero` evaluates how many zeros are in the buffer. If there is more zeros than the `zero.th` proportion, the buffer is discarded.
+
+-   `check.cycles` evaluates if LWP at night is lesser than LWP at day. If the mean LWP at day is higher that the mean LWP at night multiplied by `cycle.alpha`, the buffer is discarded.
+
+-   `check.slope` evaluates the mean slope of the buffer via a linear model. If the absolute value of the slope is higher than `slope.th`, the buffer is discarded.
+
+-   `check.level` evaluates the statistical mean of the buffer compared to the mean of the other buffers. If \$\bar{µ}*{LWP, i} \<* \bar{µ}{LWP} - \sigma*{LWP}\alpha \$ or \$\bar{µ}{LWP, i} \> \bar{µ}{LWP} +\* \sigma{LWP}\alpha \$, the buffer is discarded.
+
+Finally, the clean dataframe is written to storage.
+
+```{r, message=FALSE, warning=FALSE}
+source("../src/LWP_algorithm.R")
+
+LWP_clean <- clean.LWP(LWP_data = LWP_raw,
+                       check.na     = T,
+                       check.zero   = T, 
+                       check.cycles = T, 
+                       check.slope  = F, 
+                       check.level  = F, 
+                       nan.th       = 0.5, 
+                       zero.th      = 0.5, 
+                       cycle.alpha  = 0.5, 
+                       slope.th     = 0.000002, 
+                       level.alpha  = 2)
+
+LWP_clean <- LWP_clean[c("Date", "Time", "DateTime", "LWP", "Plant_ID")]
+
+# Additionnal cleaning
+LWP_clean <- LWP_clean %>%
+  filter(LWP > -3)
+
+# Write to storage
+write.csv(x = LWP_clean, file = paste0(data_path_clean, "LWP_clean.csv"), row.names = F)
+```
+
+### Load clean file
+
+```{r, message=FALSE, warning=FALSE}
+LWP_clean <- read.csv(paste0(data_path_clean, "LWP_clean.csv")) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+# Add NA so that there is gaps in geom_line
+temp <- expand.grid(DateTime = unique(LWP_clean$DateTime),
+                    Plant_ID = unique(LWP_clean$Plant_ID)
+                    )
+
+LWP_clean <- left_join(temp, LWP_clean, by = c("Plant_ID", "DateTime"))
+
+p2 <- ggplot(left_join(LWP_clean, Plants_ID, by = "Plant_ID")) + 
+  
+  geom_line(aes(x = DateTime, 
+                y = LWP, 
+                color = Treatment,
+                group = Plant_ID)) +
+  
+  # ylim(-3, 0) +
+  
+  ylab("Leaf Water Potantial [MPa]") +
+  
+  facet_wrap(~Plant_ID, 
+             # scales = "free_y",
+             ncol = 2) +
+  
+  theme_few() + theme(axis.text.x = element_text(angle = 90)) 
+  # my_theme +
+  # theme(strip.text.x = element_blank())
+  # ggtitle("Clean LWP")
+
+p2
+ggsave(filename = "LWP_clean.png", plot = p2, device = "png", path = plot_path, width = 9, height = 4)
+```
+
+We can make a quick graph of the comparison between Raw and Clean LWP
+
+```{r, message=FALSE, warning=FALSE}
+p <- ggplot() +
+  geom_line(data = LWP_raw, aes(x = DateTime, y = LWP), color = "red") +
+  geom_line(data = LWP_clean, aes(x = DateTime, y = LWP), color = "green") +
+  # ylim(-3, 0.5) +
+  facet_wrap(~Plant_ID) +
+  theme_bw()
+
+ggsave(filename = "LWP_comparison.png", 
+       plot = p, device = "png", path = plot_path, width = 10, height = 4)
+```
+
+### Investigate Day and Night cycles
+
+```{r, message=FALSE, warning=FALSE}
+data2plot <- left_join(LWP_raw, Plants_ID, by = "Plant_ID") %>% 
+  mutate(Hours = hour(DateTime))
+
+dnc_plot <- ggplot(data2plot, aes(x = as.factor(Hours), y = LWP)) +
+  # geom_violin(aes(x = as.factor(Hours), y = LWP), fill = "white") +
+  geom_jitter(alpha= 0.5) +
+  stat_summary(fun.y = median, geom = "point", color = "red", size = 3) +
+  facet_wrap(~Plant_ID) + theme_few()
+
+dnc_plot
+
+ggsave(filename = "DNC.png", plot = dnc_plot, device = "png", path = plot_path, width = 10, height = 10)
+```
+
+
+## 2) Load SWP data
+
+### Extract from sensor files and compile into a single raw file
+
+Soil Water Potential data is stored in a `.DAT` file.
+
+We coded a little function to convert that data into a dataframe.
+
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
+# Extract from DAT files
+SWP_raw <- load_SWP(path_SWP = path_SWP)
+
+# Replace Teros_ID by Plant_ID and set DateTime as POSIXct
+SWP_raw <- left_join(SWP_raw, Plants_ID[c("Plant_ID", "Teros")], by = c("Teros_ID" = "Teros")) %>% 
+    select(c("DateTime", "SWP", "Plant_ID")) %>% 
+    mutate(DateTime = as.POSIXct(DateTime, format = "%d/%m/%Y %H:%M"))
+
+# Write to disk
+write.csv(x = SWP_raw, file = paste0(data_path_raw, "SWP_raw.csv"), row.names = F)
+```
+
+### Load raw file, clean it a bit and write to a clean file
+
+```{r, message=FALSE, warning=FALSE}
+# Load SWP_raw
+SWP_raw <- na.omit(read.csv(paste0(data_path_raw, "SWP_raw.csv"))) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+# Filter data so DateTime match with LWP
+SWP_clean <- SWP_raw %>% 
+  filter(DateTime >= min(LWP_clean$DateTime) & DateTime <= max(LWP_clean$DateTime)) %>% 
+  filter(DateTime > as.POSIXct("2024-10-25"))
+
+# Write to disk
+write.csv(x = SWP_clean, file = paste0(data_path_clean, "SWP_clean.csv"), row.names = F)
+```
+
+```{r, message=FALSE, warning=FALSE}
+SWP_plot <- ggplot(left_join(SWP_clean, Plants_ID, by = "Plant_ID")) +
+  geom_line(aes(x =  DateTime, y = SWP, color = Treatment)) +
+  facet_wrap(~Plant_ID) +
+  theme_bw() + my_theme
+
+SWP_plot
+
+ggsave(filename = "SWP_clean.png", 
+       plot = SWP_plot, device = "png", path = plot_path, width = 9, height = 4)
+```
+
+## 3) Weight
+
+### Extract from sensor output files and compile into one single raw file
+
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
+# Load raw data
+W_raw <- load_Weigth(path = path_weight, skip = 1) %>% 
+  inner_join(Plants_ID[c("Plant_ID", "Scale")], by = "Scale") %>% 
+  mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
+  select(-c("Scale"))
+
+# Write to disk
+write.csv(x = W_raw, file = paste0(data_path_raw, "W_raw.csv"), row.names = F)
+```
+
+### Load raw file, clean a bit and write clean file
+
+```{r, message=FALSE, warning=FALSE}
+# Load raw file
+W_raw <- unique(read.csv(paste0(data_path_raw, "W_raw.csv"))) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+# Cleaning
+W_clean <- W_raw %>% 
+  filter(DateTime >= as.POSIXct("2024-10-24 11:00:00"))
+
+# Check plot
+W_plot <- ggplot(W_clean %>% left_join(Plants_ID, by = "Plant_ID")) +
+  geom_line(aes(x = DateTime, y = Weight, color = Treatment)) +
+  facet_wrap(~Plant_ID) +
+  theme_bw() + my_theme
+
+W_plot
+
+ggsave(filename = "W_clean.png", 
+       plot = W_plot, device = "png", path = plot_path, width = 9, height = 4)
+
+# Write to disk
+write.csv(x = W_clean, file = paste0(data_path_clean, "W_clean.csv"), row.names = F)
+```
+
+## 4) Compute Transpiration rate
+
+We use a custom function to compute transpiration rate $T_r$ from weight time series using the formula :
+
+$$ 
+T_{r, t} [g \cdot h^{-1}] = (W_{t-1} - W_{t}) / \Delta t  
+$$
+
+```{r, message=FALSE, warning=FALSE}
+# Load clean Weight file
+W_clean <- unique(read.csv(paste0(data_path_clean, "W_clean.csv"))) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+# Compute Tr using custom function
+Tr_raw <- compute_Tr(W = W_clean, th = 20, DT.format = "%Y-%m-%d %H:%M:%S")
+
+# Write to disk
+write.csv(x = Tr_raw, file = paste0(data_path_raw, "Tr_raw.csv"), row.names = F)
+```
+
+### Load Tr raw from file
+
+```{r, message=FALSE, warning=FALSE}
+# Read Tr raw fil from folder
+Tr_raw <- unique(read.csv(paste0(data_path_raw, "Tr_raw.csv"))) %>% 
+  mutate(DateTime = anytime(DateTime)) %>% 
+  mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S"))
+
+Tr_plot <- ggplot(left_join(Tr_raw, Plants_ID, by = "Plant_ID")) +
+  geom_line(aes(x = DateTime, y = Tr, color = Treatment)) +
+  facet_wrap(~Plant_ID) +
+  ylab("Tr [g/h]") +
+  theme_bw() + my_theme
+
+Tr_plot
+
+ggsave(filename = "Tr_raw.png", 
+       plot = Tr_plot, device = "png", path = plot_path, width = 9, height = 4)
+```
