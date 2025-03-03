@@ -4,6 +4,7 @@ authors: "Marco D'Agostino, Théo Degand, Lei Ding"
 toc: true
 format: 
   html:
+    output-file: "index.html"
     html-math-method: mathjax
     code-fold: false
     # code-summary: "Show code"
