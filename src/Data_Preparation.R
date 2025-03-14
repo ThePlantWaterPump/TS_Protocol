@@ -8,13 +8,25 @@ load_psy_file <- function(file){
   
   data_clean <- tibble()
   for(i in seq(1, nrow(data_i))){
-    # print(i)
+    
+    # Check with comma
     row_temp <- unlist(strsplit(data_i[i,], split = ","))
     
-    # Check that row is in the correct format
-    if(grepl("^\\d{2}/\\d{2}/\\d{4}$", row_temp[1])){
-      data_clean <- rbind(data_clean, row_temp[c(1, 2, 6)])
-    }else(next)
+    # Check if format is with semicolumns -> replace , by . and ; by ,
+    if(grepl("^\\d{2}/\\d{2}/\\d{4};\\d{2}:\\d{2}:\\d{2};\\d{2}$", row_temp[1])){
+      row_temp2 <- data_i[i,] 
+      row_temp2 <- gsub(",", ".", row_temp2, fixed = TRUE)
+      row_temp2 <- gsub(";", ",", row_temp2, fixed = TRUE)
+      row_temp2 <- unlist(strsplit(row_temp2, split = ","))
+    }else if(grepl("^\\d{2}/\\d{2}/\\d{4}$", row_temp[1])){
+      row_temp2 <- row_temp
+    }else{
+      # cat(row_temp)
+      # stop("Wrong data format ! |", row_temp)
+      next
+    }
+    
+    data_clean <- rbind(data_clean, row_temp2[c(1, 2, 6)])
     
   }
   
@@ -25,7 +37,7 @@ load_psy_file <- function(file){
   # Define DateTime in POSIXct format
   data_clean <- data_clean %>% mutate(DateTime = as.POSIXct(paste0(Date, " ", Time), 
                                                             format="%d/%m/%Y %H:%M:%S")
-                                      )
+  )
   
   return(data_clean)
 }
