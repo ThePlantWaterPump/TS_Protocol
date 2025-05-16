@@ -123,7 +123,7 @@ load_SWP <- function(path_SWP, sep = "\t", skip = 0){
 
 # ============================================================================ #
 
-load_Weigth <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
+load_W <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
   
   lf <- list.files(path, pattern = ".csv")
   

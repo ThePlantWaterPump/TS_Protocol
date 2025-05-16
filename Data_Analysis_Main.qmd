@@ -1,5 +1,5 @@
 ---
-title: "Data Processing"
+title: "DATA PROCESSING"
 authors: "Marco D'Agostino, Théo Degand, Lei Ding"
 toc: true
 format: 
@@ -15,9 +15,9 @@ format:
 editor: source
 ---
 
-## Introduction & Set up
+## INTRODUCTION & SET UP
 
-This notebook present user friendly codes to load, process and clean time-series data about leaf water potential, soil water potential and weights (for transpiration rate).
+This notebook presents simple codes to load, process and clean time-series data about leaf water potential ( $LWP$ ) , soil water potential ($SWP$) and weight ($W$) for transpiration rate ($T_r$).
 
 The repository contains the following folders :
 
@@ -54,7 +54,7 @@ source("src/LWP_algorithm.R")     # Contains the code of the LWP cleaning algori
 # SET DIRECTORIES
 data_path_clean <- paste0("data/clean/") # Set path to Clean folder
 data_path_raw   <- paste0("data/raw/")   # Set path to row folder
-plot_path       <- paste0("plots/")                   # Set path to plot folder
+plot_path       <- paste0("plots/")      # Set path to plot folder
 
 path_LWP        <- paste0(data_path_raw, "LWP/")
 path_SWP        <- paste0(data_path_raw, "SWP/")
@@ -88,18 +88,18 @@ Here we designed a simple experiment as example :
 
     -   water deficit (*WD* )
 
--   Leaf water potential ($LWP$) was recorded with psychrometers (`PSY` column). Raw files are stored in *data/raw/LWP/*.
+-   Leaf water potential ($LWP$) was recorded with psychrometers (`PSY` column). Raw files are stored in `data/raw/LWP/`.
 
--   Soil water potential ($SWP$) was recorded with TEROS 21 (`Teros` column). Raw files are stored in *data/raw/SWP/*.
+-   Soil water potential ($SWP$) was recorded with TEROS 21 (`Teros` column). Raw files are stored in `data/raw/SWP/`.
 
--   Weight ($W$) was recorded with scales (`Scale` column). Raw files are stored in *data/raw/weight/*.
+-   Weight ($W$) was recorded with scales (`Scale` column). Raw files are stored in `data/raw/weight/`.
 
 ```{r}
 Plants_ID <- read.csv(paste0(data_path_clean, "Plants_ID.csv"))
 pander(Plants_ID)
 ```
 
-## 1) Load leaf water potential data
+## 1) LOAD LEAF WATER POTENTIAL DATA
 
 ### Extract from raw files
 
@@ -109,14 +109,16 @@ We use the custom function `load_LWP()` to load and process each csv file in the
 
 The result is a single table containing Date, Time, LWP value and the ID of plants.
 
-The single file is writen as `LWP_raw.csv` in the raw folder.
+The single file is written as `LWP_raw.csv` in the raw folder.
 
 ```{r, eval=FALSE}
 # Compile all PSY files into one dataframe
 LWP_raw <- load_LWP(path = path_LWP)
 
 # Change the PSY id by Plant_ID
-LWP_raw <- left_join(LWP_raw, Plants_ID[c("Plant_ID", "PSY")], by = "PSY") %>%
+LWP_raw <- left_join(LWP_raw, 
+                     Plants_ID[c("Plant_ID", "PSY")], 
+                     by = "PSY") %>%
   select(-c("PSY"))
 
 pander(head(LWP_raw))
@@ -172,7 +174,7 @@ p1
 ggsave(filename = "LWP_raw.png", plot = p1, device = "png", path = plot_path, width = 9, height = 4)
 ```
 
-### Clean raw file with cleaning algorithm and write clean file.
+### Apply cleaning algorithm and store to folder.
 
 We see that data is messy, so we implemented an algorithm to clean LWP data. It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.
 
@@ -277,13 +279,13 @@ ggsave(filename = "LWP_comparison.png",
        plot = p, device = "png", path = plot_path, width = 9, height = 4)
 ```
 
-## 2) Load SWP data
+## 2) LOAD SOIL WATER POTENTIAL DATA
 
 ### Extract from sensor files and compile into a single raw file
 
-Soil Water Potential data is stored in a `.DAT` file.
-
-We coded a little function to convert that data into a dataframe.
+SWP data si stored as a unique `.DAT` file. \
+`load_SWP` function load the file and convert it to dataframe. \
+The pre-processed file can then be written to `data/raw/` folder.
 
 ```{r, eval=FALSE, message=FALSE, warning=FALSE}
 # Extract from DAT files
@@ -299,6 +301,9 @@ write.csv(x = SWP_raw, file = paste0(data_path_raw, "SWP_raw.csv"), row.names = 
 ```
 
 ### Load raw file, clean it a bit and write to a clean file
+
+Here we load the pre-processed SWP dataframe. Statistical or manual corrections can be done at will. \
+The final version of SWP data can then be written to `data/clean/` folder.
 
 ```{r, message=FALSE, warning=FALSE}
 # Load SWP_raw
@@ -347,13 +352,18 @@ SWP_plot
 ggsave(filename = "SWP_clean.png", plot = SWP_plot, device = "png", path = plot_path, width = 9, height = 4)
 ```
 
-## 3) Weight
+## 3) EXTRACT WEIGHT DATA
 
 ### Extract from sensor output files and compile into one single raw file
 
+Weight data is stored as individual `.csv` files in `data/raw/weight/` folder. \
+Similarly to LWP and SWP, the function `load_W` function extracts 
+individual files and creates a single table. \
+The table is store in `data/raw/`folder.
+
 ```{r, eval=FALSE, message=FALSE, warning=FALSE}
 # Load raw data
-W_raw <- load_Weigth(path = path_weight, skip = 1) %>% 
+W_raw <- load_W(path = path_weight, skip = 1) %>% 
   inner_join(Plants_ID[c("Plant_ID", "Scale")], by = "Scale") %>% 
   mutate(Date = as.Date(Date, format = "%d/%m/%Y")) %>%
   select(-c("Scale"))
@@ -363,6 +373,8 @@ write.csv(x = W_raw, file = paste0(data_path_raw, "W_raw.csv"), row.names = F)
 ```
 
 ### Load raw file, clean a bit and write clean file
+
+Here we load the pre-processed Weight table, apply corrections and filtering at will, then write cleaned data to `data/clean/` folder.
 
 ```{r, message=FALSE, warning=FALSE}
 # Load raw file
@@ -378,7 +390,7 @@ W_clean <- W_raw %>%
 write.csv(x = W_clean, file = paste0(data_path_clean, "W_clean.csv"), row.names = F)
 ```
 
-Simple plot
+Simple plot :
 
 ```{r, message=FALSE, warning=FALSE}
 W_plot <- ggplot(W_clean %>% left_join(Plants_ID, by = "Plant_ID")) +
@@ -412,11 +424,13 @@ ggsave(filename = "W_clean.png", plot = W_plot, device = "png", path = plot_path
 
 ## 4) Compute Transpiration rate
 
-We use a custom function to compute transpiration rate $T_r$ from weight time series using the formula :
+The function `compute_Tr` computes transpiration rate $T_r$ from Weight time series using the formula 
 
 $$ 
 T_{r, t} [g \cdot h^{-1}] = (W_{t-1} - W_{t}) / \Delta t  
 $$
+
+Pre-processed transpiration rate data is stored in `data/raw/` folder.
 
 ```{r, message=FALSE, warning=FALSE}
 # Load clean Weight file
@@ -477,7 +491,7 @@ ggsave(filename = "Tr_raw.png",
 
 Create a gigantic file with every time series measurement.
 
-For that, we create temporary dataframe by gathering variables into one key column (`Measure`) and one value column (`Value`).
+For that, we create temporary table by gathering variables into one key column (`Measure`) and one value column (`Value`).
 
 Then we bind them by row. For better visualization, we create a new attribute `Plant_name` that combine `Plant_ID` and `Treatment`.
 
@@ -503,7 +517,7 @@ TS_full <- rbind(LWP_temp, SWP_temp) %>%
   mutate(Plant_name = paste0("Plant ", Plant_ID, " | ", Treatment))
 ```
 
-Plot the whole thing
+Generate the plot
 
 ```{r}
 full_plot <- ggplot(TS_full) +
