@@ -65,33 +65,47 @@ load_LWP <- function(path){
 
 # ============================================================================ #
 
-load_SWP <- function(path_SWP, sep = "\t", skip = 0){
+load_SWP <- function(path_SWP, sep = "\t", skip = 0, file = NULL){
+  #' @description
+    #' Load Soil Water Potential data from .DAT file.
+  #' @param path_SWP Path to folder where .DAT files are stored.
+  #' @param sep Character string. Separator of column in raw file. By default is space.
+  #' @param skip Number of rows from the .DAT file to skip. Default is zero.
+  #' @param file Default is NULL and the function load every .DAT file in path_SWP. If specified, only load the corresponding file.
+  #' @return A tibble containing 'DateTime', 'Teros_ID' and 'SWP columns'.
+    
+  # Scan folder or load specified file?
+  if(!is.null(file)){
+    ls <- file
+  }else{
+    ls <- list.files(path_SWP, pattern = ".dat") 
+  }
   
-  ls <- list.files(path_SWP, pattern = ".dat")
-  
+  # Initialization
   SWP_raw <- tibble()
   
+  # Loop for file
   for(file in ls){
     
     cat("Loading ", file, "\n")
     
     # Find column names by reading the first row of the DAT file : 
-    preview <- read.table(paste0(path_SWP, file), sep = sep, nrows = 5, skip = skip)
-    # preview <- readLines(paste0(path_SWP, file), n = 5)  # Read first few lines
-    
+    preview      <- read.table(paste0(path_SWP, file), sep = sep, nrows = 5, skip = skip)
     header_line  <- which(preview$V1 == "TIMESTAMP")  # Find the first non-empty row
-    column_names <- unlist(preview[header_line,])  # Split by tab
+    column_names <- unlist(preview[header_line,])     # Split by tab
     
     # Read file
-    data <- read.table(file = paste0(path_SWP, file), 
-                       sep = sep, header = T, skip = skip + 3, stringsAsFactors = FALSE)
+    data         <- read.table(file = paste0(path_SWP, file), 
+                               sep = sep, 
+                               header = T, skip = skip + 3, 
+                               stringsAsFactors = FALSE)
     
     # Change column names
     colnames(data) <- column_names
     
     # Loop through the columns. If the column name contains "Tension", extract the Teros_ID from it.
     SWP_temp <- tibble()
-    coln <- colnames(data)
+    coln     <- colnames(data)
     for(col_i in coln){
       
       if(is.na(strsplit(col_i, split = "Tension")[[1]][1])){

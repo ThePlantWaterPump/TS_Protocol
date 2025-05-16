@@ -6,7 +6,7 @@ format:
   html:
     output-file: "index.html"
     html-math-method: mathjax
-    code-fold: false
+    code-fold: true
     # code-summary: "Show code"
     code-tools: true
     code-overflow: wrap
@@ -283,13 +283,22 @@ ggsave(filename = "LWP_comparison.png",
 
 ### Extract from sensor files and compile into a single raw file
 
-SWP data si stored as a unique `.DAT` file. \
-`load_SWP` function load the file and convert it to dataframe. \
-The pre-processed file can then be written to `data/raw/` folder.
+SWP data is stored as a unique raw `.DAT` file.\
+The function `load_SWP` loads the file and convert it to a tibble.\
+The pre-processed file can then be stored in `data/raw/` folder.\
+
+Depending on the format of the `.DAT` file, you may need to change the inputs :\
+- `path_SWP` : Path to the folder containing the `.DAT` files. \ 
+- `sep`      : Separator of column. By defaut is space, other used formats are `","`, `";"`.\
+- `skip`     : Number of lines to skip. By default is zero.\
+- `filename` : By default is null and the function scan every file of the folder. If `filename` is specified, the function only loads the corresponding file.
 
 ```{r, eval=FALSE, message=FALSE, warning=FALSE}
 # Extract from DAT files
-SWP_raw <- load_SWP(path_SWP = path_SWP)
+SWP_raw <- load_SWP(path_SWP = path_SWP,
+                    sep = "\t",
+                    skip = 0,              
+                    file = NULL)
 
 # Replace Teros_ID by Plant_ID and set DateTime as POSIXct
 SWP_raw <- left_join(SWP_raw, Plants_ID[c("Plant_ID", "Teros")], by = c("Teros_ID" = "Teros")) %>% 
@@ -302,7 +311,7 @@ write.csv(x = SWP_raw, file = paste0(data_path_raw, "SWP_raw.csv"), row.names = 
 
 ### Load raw file, clean it a bit and write to a clean file
 
-Here we load the pre-processed SWP dataframe. Statistical or manual corrections can be done at will. \
+Here we load the pre-processed SWP dataframe. Statistical or manual corrections can be done at will.\
 The final version of SWP data can then be written to `data/clean/` folder.
 
 ```{r, message=FALSE, warning=FALSE}
@@ -356,9 +365,8 @@ ggsave(filename = "SWP_clean.png", plot = SWP_plot, device = "png", path = plot_
 
 ### Extract from sensor output files and compile into one single raw file
 
-Weight data is stored as individual `.csv` files in `data/raw/weight/` folder. \
-Similarly to LWP and SWP, the function `load_W` function extracts 
-individual files and creates a single table. \
+Weight data is stored as individual `.csv` files in `data/raw/weight/` folder.\
+Similarly to LWP and SWP, the function `load_W` function extracts individual files and creates a single table.\
 The table is store in `data/raw/`folder.
 
 ```{r, eval=FALSE, message=FALSE, warning=FALSE}
@@ -424,7 +432,7 @@ ggsave(filename = "W_clean.png", plot = W_plot, device = "png", path = plot_path
 
 ## 4) Compute Transpiration rate
 
-The function `compute_Tr` computes transpiration rate $T_r$ from Weight time series using the formula 
+The function `compute_Tr` computes transpiration rate $T_r$ from Weight time series using the formula
 
 $$ 
 T_{r, t} [g \cdot h^{-1}] = (W_{t-1} - W_{t}) / \Delta t  
