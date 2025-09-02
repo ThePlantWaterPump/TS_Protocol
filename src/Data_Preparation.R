@@ -55,7 +55,7 @@ load_LWP <- function(path){
   for(i in ls){
     cat("Loading ", i, "\n")
     sensor.name       <- strsplit(i, split = ".CSV")[[1]]   # Extract sensor name from filename
-    LWP_temp          <- load_psy_file(file = paste0(path_LWP, i))
+    LWP_temp          <- load_psy_file(file = paste0(path, i))
     # LWP_temp$Plant_ID <- Plants_ID$Plant[Plants_ID$PSY == sensor.name] 
     LWP_temp$PSY      <- sensor.name
     LWP_data          <- rbind(LWP_data, LWP_temp)

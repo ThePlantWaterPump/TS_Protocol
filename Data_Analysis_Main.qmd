@@ -559,6 +559,10 @@ full_plot <- ggplot(TS_full) +
   theme(legend.position = "bottom") 
 
 full_plot
-ggsave(filename = "Full_plot.svg", plot = full_plot, device = "svg", path = plot_path, width = 7, height = 5)
+
 ggsave(filename = "Full_plot.png", plot = full_plot, device = "png", path = plot_path, width = 7, height = 5)
+
+svg(filename = paste0(plot_path, "Full_plot.svg"), width = 7, height = 5)
+full_plot
+dev.off()
 ```
