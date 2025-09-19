@@ -1,0 +1,152 @@
+'CR800 Series Datalogger
+'WIRING
+'Test for master students
+'Orange---------Data-----------------------------C1
+'Bare-----------GND------------------------------G
+'Brown----------Power----------------------------SW12
+
+
+
+Public BattV               'Voltage Battery
+
+' plant1
+Public Plant1-1(2)
+Alias Plant1-1(1)=TensionMP40
+Alias Plant1-1(2)=TempMP40
+
+Public Plant1-2(2)
+Alias Plant1-2(1)=TensionMP01
+Alias Plant1-2(2)=TempMP01
+
+Public Plant1-3(2)
+Alias Plant1-3(1)=TensionMP04
+Alias Plant1-3(2)=TempMP04
+
+Public Plant1-4(2)
+Alias Plant1-4(1)=TensionMP68
+Alias Plant1-4(2)=TempMP68
+
+' plant2
+Public Plant2-1(2)
+Alias Plant2-1(1)=TensionMP40
+Alias Plant2-1(2)=TempMP40
+
+Public Plant2-2(2)
+Alias Plant2-2(1)=TensionMP01
+Alias Plant2-2(2)=TempMP01
+
+Public Plant2-3(2)
+Alias Plant2-3(1)=TensionMP04
+Alias Plant2-3(2)=TempMP04
+
+Public Plant2-4(2)
+Alias Plant2-4(1)=TensionMP68
+Alias Plant2-4(2)=TempMP68
+
+' plant3
+Public Plant3-1(2)
+Alias Plant3-1(1)=TensionMP40
+Alias Plant3-1(2)=TempMP40
+
+Public Plant3-2(2)
+Alias Plant3-2(1)=TensionMP01
+Alias Plant3-2(2)=TempMP01
+
+Public Plant3-3(2)
+Alias Plant3-3(1)=TensionMP04
+Alias Plant3-3(2)=TempMP04
+
+Public Plant3-4(2)
+Alias Plant3-4(1)=TensionMP68
+Alias Plant3-4(2)=TempMP68
+
+' plant4
+Public Plant4-1(2)
+Alias Plant4-1(1)=TensionMP40
+Alias Plant4-1(2)=TempMP40
+
+Public Plant4-2(2)
+Alias Plant4-2(1)=TensionMP01
+Alias Plant4-2(2)=TempMP01
+
+Public Plant4-3(2)
+Alias Plant4-3(1)=TensionMP04
+Alias Plant4-3(2)=TempMP04
+
+Public Plant4-4(2)
+Alias Plant4-4(1)=TensionMP68
+Alias Plant4-4(2)=TempMP68
+
+' plant5
+Public Plant5-1(2)
+Alias Plant5-1(1)=TensionMP40
+Alias Plant5-1(2)=TempMP40
+
+Public Plant5-2(2)
+Alias Plant5-2(1)=TensionMP01
+Alias Plant5-2(2)=TempMP01
+
+Public Plant5-3(2)
+Alias Plant5-3(1)=TensionMP04
+Alias Plant5-3(2)=TempMP04
+
+Public Plant5-4(2)
+Alias Plant5-4(1)=TensionMP68
+Alias Plant5-4(2)=TempMP68
+
+Units TempMP40,TempMP01,TempMP04,TempMP68=Deg_C
+Units TensionMP40,TensionMP01,TensionMP04,TensionMP68=kPa
+Units BattV=Volts
+
+'Define Data Tables
+DataTable (DL3_Battery_Table,1,-1)
+    DataInterval (0,1,Day,10)
+    Minimum (1,BattV,FP2,False,False)
+EndTable
+
+'Define Data Tables
+DataTable(DL3_Teros_Table,True,-1)
+    DataInterval(0,5,Min,10)      
+    Sample (1,TempMP40,FP2)
+    Sample (1,TensionMP40,FP2)
+    Sample (1,TempMP01,FP2)
+    Sample (1,TensionMP01,FP2)
+    Sample (1,TempMP04,FP2)
+    Sample (1,TensionMP04,FP2)
+    Sample (1,TempMP68,FP2)
+    Sample (1,TensionMP68,FP2)
+    
+EndTable
+
+BeginProg
+    Scan (1,Min,0,0)
+    
+    'Default Datalogger Battery Voltage measurement 'BattV'
+    Battery(BattV)
+    
+    'Turn SW12V on (supply power - 12V)
+    SW12 (1)
+    
+    ' Sensors on Control Port 1 "C1"
+    Delay (0,300,mSec)
+    SDI12Recorder (Plant1(),1,0,"M!",1.0,0)  'SDI12 address 0 - Control Port 1 "C1"- for MP40
+    
+    Delay (0,300,mSec)
+    SDI12Recorder (Plant2(),1,1,"M!",1.0,0)  'SDI12 address 1 - Control Port 1 "C1"- for MP01
+    
+    Delay (0,300,mSec)
+    SDI12Recorder (Plant3(),1,4,"M!",1.0,0)  'SDI12 address 4 - Control Port 1 "C1"- for MP04
+    
+    Delay (0,300,mSec)
+    SDI12Recorder (Plant4(),1,8,"M!",1.0,0)  'SDI12 address 8 - Control Port 1 "C1"-- for MP68
+    
+    
+
+    'Turn SW12V off
+    SW12 (0)
+
+    CallTable DL3_Battery_Table
+    CallTable DL3_Teros_Table
+
+    NextScan
+EndProg
