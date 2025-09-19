@@ -1,5 +1,7 @@
 ## Time-series measurements to study plant hydraulic status : Codes to extract, compile and clean data about Leaf Water Potential, Soil Water Potential and Weight.
 
+[![DOI](https://zenodo.org/badge/934849547.svg)](https://doi.org/10.5281/zenodo.17158114)
+
 This notebook present user friendly codes to load, process and clean time-series data about leaf water potential, soil water potential and weights (for transpiration rate).
 The repository contains the following folders :
 * data/ :
