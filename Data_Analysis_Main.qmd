@@ -125,7 +125,7 @@ By default, the function also load columns :
   - *Correctionfactor* : Correction factor
   - *BatteryLevel* : The level of battery
 
-By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.
+NB: By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.
 
 The single file is written as `LWP_raw.csv` in the raw folder.
 
@@ -158,6 +158,7 @@ Once the raw files are compiled, we can simply load the processed csv file.
 NB : each time we load the raw.csv files, we need to format correctly the DateTime column.
 
 Data must be filtered by :
+  - Realistic values of Leaf Water Potential ; here > -2MPa
   - WetBulb > 0 (PSY1-LEAF manual)
   - -1.5 < dT < 0.5 (Bourbia et al. 2021)
   - Battery level (in case there is issue when charging)
