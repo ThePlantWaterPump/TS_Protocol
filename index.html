@@ -314,7 +314,7 @@ window.Quarto = {
 <p>We use the custom function <code>load_LWP()</code> to load and process each csv file in the provided path.</p>
 <p>The result is a single table containing Date, Time, LWP value and the ID of plants.</p>
 <p>By default, the function also load columns : - <em>Chambertemp</em> : Temperature inside the chamber [°C] - <em>dT</em> : the difference of temperature between the 2 thermocouples [°C] - <em>WetBulb</em> : the wet bulb (see PSY1-LEAF manual (ICT) for formal definition) - <em>LWP</em> : the Leaf Water Potential measure [MPa] - <em>Intercept</em> : Intercept of the calibration curve. - <em>Slope</em> : Slope of the calibration curve. - <em>Correction_dT</em> : Correction factor for dT - <em>Correctionfactor</em> : Correction factor - <em>BatteryLevel</em> : The level of battery</p>
-<p>By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.</p>
+<p>NB: By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.</p>
 <p>The single file is written as <code>LWP_raw.csv</code> in the raw folder.</p>
 <div class="cell">
 <details class="code-fold">
@@ -345,7 +345,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="load-compiled-raw-file-and-apply-filtering">Load compiled raw file and apply filtering</h3>
 <p>Once the raw files are compiled, we can simply load the processed csv file.</p>
 <p>NB : each time we load the raw.csv files, we need to format correctly the DateTime column.</p>
-<p>Data must be filtered by : - WetBulb &gt; 0 (PSY1-LEAF manual) - -1.5 &lt; dT &lt; 0.5 (Bourbia et al.&nbsp;2021) - Battery level (in case there is issue when charging)</p>
+<p>Data must be filtered by : - Realistic values of Leaf Water Potential ; here &gt; -2MPa - WetBulb &gt; 0 (PSY1-LEAF manual) - -1.5 &lt; dT &lt; 0.5 (Bourbia et al.&nbsp;2021) - Battery level (in case there is issue when charging)</p>
 <p>In addition, we developped a LWP cleaning algorith. It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.</p>
 <ul>
 <li><p><code>check.na</code> evaluates how many NAN are in the buffer. If there is more NAN than the <code>nan.th</code> proportion, the buffer is discarded.</p></li>
@@ -1357,7 +1357,7 @@ Adding another scale for x, which will replace the existing scale.</code></pre>
 <span id="cb26-127"><a href="#cb26-127" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>*Correctionfactor* : Correction factor</span>
 <span id="cb26-128"><a href="#cb26-128" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>*BatteryLevel* : The level of battery</span>
 <span id="cb26-129"><a href="#cb26-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-130"><a href="#cb26-130" aria-hidden="true" tabindex="-1"></a>By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.</span>
+<span id="cb26-130"><a href="#cb26-130" aria-hidden="true" tabindex="-1"></a>NB: By default, the psychrometers are calibrated with Intercept = 1.00 and Slope = -3.80.</span>
 <span id="cb26-131"><a href="#cb26-131" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-132"><a href="#cb26-132" aria-hidden="true" tabindex="-1"></a>The single file is written as <span class="in">`LWP_raw.csv`</span> in the raw folder.</span>
 <span id="cb26-133"><a href="#cb26-133" aria-hidden="true" tabindex="-1"></a></span>
@@ -1390,342 +1390,343 @@ Adding another scale for x, which will replace the existing scale.</code></pre>
 <span id="cb26-160"><a href="#cb26-160" aria-hidden="true" tabindex="-1"></a>NB : each time we load the raw.csv files, we need to format correctly the DateTime column.</span>
 <span id="cb26-161"><a href="#cb26-161" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-162"><a href="#cb26-162" aria-hidden="true" tabindex="-1"></a>Data must be filtered by :</span>
-<span id="cb26-163"><a href="#cb26-163" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>WetBulb &gt; 0 (PSY1-LEAF manual)</span>
-<span id="cb26-164"><a href="#cb26-164" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>-1.5 &lt; dT &lt; 0.5 (Bourbia et al. 2021)</span>
-<span id="cb26-165"><a href="#cb26-165" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Battery level (in case there is issue when charging)</span>
-<span id="cb26-166"><a href="#cb26-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-167"><a href="#cb26-167" aria-hidden="true" tabindex="-1"></a>In addition, we developped a LWP cleaning algorith.</span>
-<span id="cb26-168"><a href="#cb26-168" aria-hidden="true" tabindex="-1"></a>It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.</span>
-<span id="cb26-169"><a href="#cb26-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-170"><a href="#cb26-170" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.na`</span> evaluates how many NAN are in the buffer. If there is more NAN than the <span class="in">`nan.th`</span> proportion, the buffer is discarded.</span>
-<span id="cb26-171"><a href="#cb26-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-172"><a href="#cb26-172" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.zero`</span> evaluates how many zeros are in the buffer. If there is more zeros than the <span class="in">`zero.th`</span> proportion, the buffer is discarded.</span>
-<span id="cb26-173"><a href="#cb26-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-174"><a href="#cb26-174" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.cycles`</span> evaluates if LWP at night is lesser than LWP at day. If the mean LWP at day is higher that the mean LWP at night multiplied by <span class="in">`cycle.alpha`</span>, the buffer is discarded.</span>
-<span id="cb26-175"><a href="#cb26-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-176"><a href="#cb26-176" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.slope`</span> evaluates the mean slope of the buffer via a linear model. If the absolute value of the slope is higher than <span class="in">`slope.th`</span>, the buffer is discarded.</span>
-<span id="cb26-177"><a href="#cb26-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-178"><a href="#cb26-178" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.level`</span> evaluates the statistical mean of the buffer compared to the mean of the other buffers. If $\mu_{LWP, i} &lt; \mu_{LWP} - \alpha \cdot \sigma_{LWP}$ or $\mu_{LWP, i} &gt; \mu_{LWP} + \alpha \cdot \sigma_{LWP}$ (with $\mu_{LWP}$ is the mean LWP for all buffers, $\mu_{LWP,i}$ is the mean LWP of the ith buffer, $\alpha$ is the unput multiplicator and $\sigma_{LWP}$ is the standard deviation of LWP), the buffer is discarded.</span>
-<span id="cb26-179"><a href="#cb26-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-180"><a href="#cb26-180" aria-hidden="true" tabindex="-1"></a>NB : for the dataset in example, data was already good so the application of LWP_algo don't improve the quality.</span>
-<span id="cb26-181"><a href="#cb26-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-182"><a href="#cb26-182" aria-hidden="true" tabindex="-1"></a>Finally, the clean dataframe is written to storage.</span>
-<span id="cb26-183"><a href="#cb26-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-184"><a href="#cb26-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-185"><a href="#cb26-185" aria-hidden="true" tabindex="-1"></a><span class="co"># LOAD RAW LWP</span></span>
-<span id="cb26-186"><a href="#cb26-186" aria-hidden="true" tabindex="-1"></a>LWP_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"LWP_raw.csv"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-187"><a href="#cb26-187" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-188"><a href="#cb26-188" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-189"><a href="#cb26-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Plant_ID =</span> <span class="fu">as.factor</span>(Plant_ID)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-190"><a href="#cb26-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(LWP <span class="sc">&gt;</span> <span class="sc">-</span><span class="dv">2</span>) <span class="co"># Realistic values</span></span>
-<span id="cb26-191"><a href="#cb26-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-192"><a href="#cb26-192" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-193"><a href="#cb26-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-194"><a href="#cb26-194" aria-hidden="true" tabindex="-1"></a><span class="co"># CLEANING MANNUALLY</span></span>
-<span id="cb26-195"><a href="#cb26-195" aria-hidden="true" tabindex="-1"></a>LWP_clean1 <span class="ot">&lt;-</span> LWP_raw <span class="sc">%&gt;%</span> </span>
-<span id="cb26-196"><a href="#cb26-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dT <span class="sc">&gt;=</span> <span class="sc">-</span><span class="fl">1.5</span> <span class="sc">&amp;</span> dT <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-197"><a href="#cb26-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(WetBulb <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb26-198"><a href="#cb26-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-199"><a href="#cb26-199" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-200"><a href="#cb26-200" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-201"><a href="#cb26-201" aria-hidden="true" tabindex="-1"></a>LWP_clean2 <span class="ot">&lt;-</span> <span class="fu">clean.LWP</span>(<span class="at">LWP_data =</span> LWP_clean1,</span>
-<span id="cb26-202"><a href="#cb26-202" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.na     =</span> T,</span>
-<span id="cb26-203"><a href="#cb26-203" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.zero   =</span> T, </span>
-<span id="cb26-204"><a href="#cb26-204" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.cycles =</span> T, </span>
-<span id="cb26-205"><a href="#cb26-205" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.slope  =</span> T, </span>
-<span id="cb26-206"><a href="#cb26-206" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.level  =</span> T, </span>
-<span id="cb26-207"><a href="#cb26-207" aria-hidden="true" tabindex="-1"></a>                       <span class="at">nan.th       =</span> <span class="fl">0.5</span>, </span>
-<span id="cb26-208"><a href="#cb26-208" aria-hidden="true" tabindex="-1"></a>                       <span class="at">zero.th      =</span> <span class="fl">0.5</span>, </span>
-<span id="cb26-209"><a href="#cb26-209" aria-hidden="true" tabindex="-1"></a>                       <span class="at">cycle.alpha  =</span> <span class="fl">0.5</span>, </span>
-<span id="cb26-210"><a href="#cb26-210" aria-hidden="true" tabindex="-1"></a>                       <span class="at">slope.th     =</span> <span class="fl">0.00005</span>, </span>
-<span id="cb26-211"><a href="#cb26-211" aria-hidden="true" tabindex="-1"></a>                       <span class="at">level.alpha  =</span> <span class="dv">2</span>)</span>
-<span id="cb26-212"><a href="#cb26-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-213"><a href="#cb26-213" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-214"><a href="#cb26-214" aria-hidden="true" tabindex="-1"></a>p_comp <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> LWP_clean2</span>
-<span id="cb26-215"><a href="#cb26-215" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"LWP"</span></span>
-<span id="cb26-216"><a href="#cb26-216" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">color =</span> <span class="st">"Plant_ID"</span></span>
-<span id="cb26-217"><a href="#cb26-217" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">show.lines =</span> F</span>
-<span id="cb26-218"><a href="#cb26-218" aria-hidden="true" tabindex="-1"></a>                         ) <span class="sc">+</span></span>
-<span id="cb26-219"><a href="#cb26-219" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_raw, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb26-220"><a href="#cb26-220" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_clean1, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
-<span id="cb26-221"><a href="#cb26-221" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_clean2, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"green"</span>) <span class="sc">+</span></span>
-<span id="cb26-222"><a href="#cb26-222" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID) <span class="sc">+</span></span>
-<span id="cb26-223"><a href="#cb26-223" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Leaf Water Potantial [MPa]"</span>) </span>
-<span id="cb26-224"><a href="#cb26-224" aria-hidden="true" tabindex="-1"></a>p_comp</span>
-<span id="cb26-225"><a href="#cb26-225" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="fu">paste0</span>(plot_path, <span class="st">"LWP_comparison.png"</span>), <span class="at">plot =</span> p_comp</span>
-<span id="cb26-226"><a href="#cb26-226" aria-hidden="true" tabindex="-1"></a>       ,<span class="at">width =</span> <span class="dv">4</span>, <span class="at">height =</span> <span class="dv">3</span>)</span>
-<span id="cb26-227"><a href="#cb26-227" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-228"><a href="#cb26-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-229"><a href="#cb26-229" aria-hidden="true" tabindex="-1"></a><span class="co"># WRITE TO CLEAN</span></span>
-<span id="cb26-230"><a href="#cb26-230" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(LWP_clean2 <span class="sc">%&gt;%</span> </span>
-<span id="cb26-231"><a href="#cb26-231" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">"DateTime"</span>, <span class="st">"Plant_ID"</span>, <span class="st">"LWP"</span>))</span>
-<span id="cb26-232"><a href="#cb26-232" aria-hidden="true" tabindex="-1"></a>          ,<span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"LWP_clean.csv"</span>)</span>
-<span id="cb26-233"><a href="#cb26-233" aria-hidden="true" tabindex="-1"></a>          ,<span class="at">row.names =</span> F</span>
-<span id="cb26-234"><a href="#cb26-234" aria-hidden="true" tabindex="-1"></a>          )</span>
-<span id="cb26-235"><a href="#cb26-235" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-236"><a href="#cb26-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-237"><a href="#cb26-237" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load clean file</span></span>
-<span id="cb26-238"><a href="#cb26-238" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-239"><a href="#cb26-239" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-240"><a href="#cb26-240" aria-hidden="true" tabindex="-1"></a>LWP_clean <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_clean, <span class="st">"LWP_clean.csv"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-241"><a href="#cb26-241" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-242"><a href="#cb26-242" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-243"><a href="#cb26-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)])</span>
-<span id="cb26-244"><a href="#cb26-244" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-245"><a href="#cb26-245" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-246"><a href="#cb26-246" aria-hidden="true" tabindex="-1"></a>LWP_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> LWP_clean</span>
-<span id="cb26-247"><a href="#cb26-247" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"LWP"</span></span>
-<span id="cb26-248"><a href="#cb26-248" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
-<span id="cb26-249"><a href="#cb26-249" aria-hidden="true" tabindex="-1"></a>                            ) <span class="sc">+</span></span>
-<span id="cb26-250"><a href="#cb26-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
-<span id="cb26-251"><a href="#cb26-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
-<span id="cb26-252"><a href="#cb26-252" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID, <span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb26-253"><a href="#cb26-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Leaf Water Potantial [MPa]"</span>) </span>
-<span id="cb26-254"><a href="#cb26-254" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-255"><a href="#cb26-255" aria-hidden="true" tabindex="-1"></a><span class="co"># Show plot and save to file</span></span>
-<span id="cb26-256"><a href="#cb26-256" aria-hidden="true" tabindex="-1"></a>LWP_plot</span>
-<span id="cb26-257"><a href="#cb26-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-258"><a href="#cb26-258" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"LWP_clean.png"</span>, <span class="at">plot =</span> LWP_plot, </span>
-<span id="cb26-259"><a href="#cb26-259" aria-hidden="true" tabindex="-1"></a>       <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
-<span id="cb26-260"><a href="#cb26-260" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-261"><a href="#cb26-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-262"><a href="#cb26-262" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2) LOAD SOIL WATER POTENTIAL DATA</span></span>
-<span id="cb26-263"><a href="#cb26-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-264"><a href="#cb26-264" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extract from sensor files and compile into a single raw file</span></span>
-<span id="cb26-265"><a href="#cb26-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-266"><a href="#cb26-266" aria-hidden="true" tabindex="-1"></a>SWP data is stored as a unique raw <span class="in">`.DAT`</span> file.\</span>
-<span id="cb26-267"><a href="#cb26-267" aria-hidden="true" tabindex="-1"></a>The function <span class="in">`load_SWP`</span> loads the file and convert it to a tibble.\</span>
-<span id="cb26-268"><a href="#cb26-268" aria-hidden="true" tabindex="-1"></a>The pre-processed file can then be stored in <span class="in">`data/raw/`</span> folder.\</span>
-<span id="cb26-269"><a href="#cb26-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-270"><a href="#cb26-270" aria-hidden="true" tabindex="-1"></a>Depending on the format of the <span class="in">`.DAT`</span> file, you may need to change the inputs :\</span>
-<span id="cb26-271"><a href="#cb26-271" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`path_SWP`</span> : Path to the folder containing the <span class="in">`.DAT`</span> files. \ </span>
-<span id="cb26-272"><a href="#cb26-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sep`</span>      : Separator of column. By defaut is space, other used formats are <span class="in">`","`</span>, <span class="in">`";"`</span>.\</span>
-<span id="cb26-273"><a href="#cb26-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`skip`</span>     : Number of lines to skip. By default is zero.\</span>
-<span id="cb26-274"><a href="#cb26-274" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`filename`</span> : By default is null and the function scan every file of the folder. If <span class="in">`filename`</span> is specified, the function only loads the corresponding file.</span>
-<span id="cb26-275"><a href="#cb26-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-276"><a href="#cb26-276" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-277"><a href="#cb26-277" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract from DAT files</span></span>
-<span id="cb26-278"><a href="#cb26-278" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">load_SWP</span>(<span class="at">path_SWP =</span> path_SWP,</span>
-<span id="cb26-279"><a href="#cb26-279" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span>,</span>
-<span id="cb26-280"><a href="#cb26-280" aria-hidden="true" tabindex="-1"></a>                    <span class="at">skip =</span> <span class="dv">0</span></span>
-<span id="cb26-281"><a href="#cb26-281" aria-hidden="true" tabindex="-1"></a>                    )</span>
-<span id="cb26-282"><a href="#cb26-282" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-283"><a href="#cb26-283" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace Teros_ID by Plant_ID and set DateTime as POSIXct</span></span>
-<span id="cb26-284"><a href="#cb26-284" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">left_join</span>(SWP_raw, Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Teros"</span>)], <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Teros_ID"</span> <span class="ot">=</span> <span class="st">"Teros"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-285"><a href="#cb26-285" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">"DateTime"</span>, <span class="st">"SWP"</span>, <span class="st">"Plant_ID"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-286"><a href="#cb26-286" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%d/%m/%Y %H:%M"</span>))</span>
-<span id="cb26-287"><a href="#cb26-287" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-288"><a href="#cb26-288" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb26-289"><a href="#cb26-289" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> SWP_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
-<span id="cb26-290"><a href="#cb26-290" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-291"><a href="#cb26-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-292"><a href="#cb26-292" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load raw file, clean it a bit and write to a clean file</span></span>
-<span id="cb26-293"><a href="#cb26-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-294"><a href="#cb26-294" aria-hidden="true" tabindex="-1"></a>Here we load the pre-processed SWP dataframe. Statistical or manual corrections can be done at will.\</span>
-<span id="cb26-295"><a href="#cb26-295" aria-hidden="true" tabindex="-1"></a>The final version of SWP data can then be written to <span class="in">`data/clean/`</span> folder.</span>
-<span id="cb26-296"><a href="#cb26-296" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-297"><a href="#cb26-297" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-298"><a href="#cb26-298" aria-hidden="true" tabindex="-1"></a><span class="co"># Load SWP_raw</span></span>
-<span id="cb26-299"><a href="#cb26-299" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-300"><a href="#cb26-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-301"><a href="#cb26-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>))</span>
-<span id="cb26-302"><a href="#cb26-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-303"><a href="#cb26-303" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter data so DateTime match with LWP</span></span>
-<span id="cb26-304"><a href="#cb26-304" aria-hidden="true" tabindex="-1"></a>SWP_clean <span class="ot">&lt;-</span> SWP_raw <span class="sc">%&gt;%</span> </span>
-<span id="cb26-305"><a href="#cb26-305" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;=</span> <span class="fu">min</span>(LWP_clean<span class="sc">$</span>DateTime) <span class="sc">&amp;</span> DateTime <span class="sc">&lt;=</span> <span class="fu">max</span>(LWP_clean<span class="sc">$</span>DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-306"><a href="#cb26-306" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="fu">as.POSIXct</span>(<span class="st">"2024-10-25"</span>))</span>
-<span id="cb26-307"><a href="#cb26-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-308"><a href="#cb26-308" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb26-309"><a href="#cb26-309" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> SWP_clean, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"SWP_clean.csv"</span>), <span class="at">row.names =</span> F)</span>
-<span id="cb26-310"><a href="#cb26-310" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-311"><a href="#cb26-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-312"><a href="#cb26-312" aria-hidden="true" tabindex="-1"></a>Simple plot :</span>
-<span id="cb26-313"><a href="#cb26-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-314"><a href="#cb26-314" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-315"><a href="#cb26-315" aria-hidden="true" tabindex="-1"></a>SWP_clean <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-316"><a href="#cb26-316" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-317"><a href="#cb26-317" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-318"><a href="#cb26-318" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)]) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-319"><a href="#cb26-319" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="fu">as.Date</span>(<span class="st">"2024-10-25"</span>))</span>
-<span id="cb26-320"><a href="#cb26-320" aria-hidden="true" tabindex="-1"></a>           </span>
-<span id="cb26-321"><a href="#cb26-321" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-322"><a href="#cb26-322" aria-hidden="true" tabindex="-1"></a>SWP_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> SWP_clean</span>
-<span id="cb26-323"><a href="#cb26-323" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"SWP"</span></span>
-<span id="cb26-324"><a href="#cb26-324" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
-<span id="cb26-325"><a href="#cb26-325" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">facet =</span> <span class="st">"Plant_ID"</span></span>
-<span id="cb26-326"><a href="#cb26-326" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb26-327"><a href="#cb26-327" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> SWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
-<span id="cb26-328"><a href="#cb26-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> SWP, <span class="at">color =</span> Treatment))</span>
-<span id="cb26-329"><a href="#cb26-329" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-330"><a href="#cb26-330" aria-hidden="true" tabindex="-1"></a><span class="co"># =========================================== #</span></span>
-<span id="cb26-331"><a href="#cb26-331" aria-hidden="true" tabindex="-1"></a>SWP_plot</span>
-<span id="cb26-332"><a href="#cb26-332" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"SWP_clean.png"</span>, <span class="at">plot =</span> SWP_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
-<span id="cb26-333"><a href="#cb26-333" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-334"><a href="#cb26-334" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-335"><a href="#cb26-335" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3) EXTRACT WEIGHT DATA</span></span>
-<span id="cb26-336"><a href="#cb26-336" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-337"><a href="#cb26-337" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extract from sensor output files and compile into one single raw file</span></span>
-<span id="cb26-338"><a href="#cb26-338" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-339"><a href="#cb26-339" aria-hidden="true" tabindex="-1"></a>Weight data is stored as individual <span class="in">`.csv`</span> files in <span class="in">`data/raw/weight/`</span> folder.\</span>
-<span id="cb26-340"><a href="#cb26-340" aria-hidden="true" tabindex="-1"></a>Similarly to LWP and SWP, the function <span class="in">`load_W`</span> function extracts individual files and creates a single table.\</span>
-<span id="cb26-341"><a href="#cb26-341" aria-hidden="true" tabindex="-1"></a>The table is store in <span class="in">`data/raw/`</span>folder.</span>
-<span id="cb26-342"><a href="#cb26-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-343"><a href="#cb26-343" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-344"><a href="#cb26-344" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw data</span></span>
-<span id="cb26-345"><a href="#cb26-345" aria-hidden="true" tabindex="-1"></a>W_raw <span class="ot">&lt;-</span> <span class="fu">load_Weigth</span>(<span class="at">path =</span> path_weight, <span class="at">skip =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-346"><a href="#cb26-346" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Scale"</span>)], <span class="at">by =</span> <span class="st">"Scale"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-347"><a href="#cb26-347" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">as.Date</span>(Date, <span class="at">format =</span> <span class="st">"%d/%m/%Y"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb26-348"><a href="#cb26-348" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">"Scale"</span>))</span>
-<span id="cb26-349"><a href="#cb26-349" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-350"><a href="#cb26-350" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb26-351"><a href="#cb26-351" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> W_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"W_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
-<span id="cb26-352"><a href="#cb26-352" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-353"><a href="#cb26-353" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-354"><a href="#cb26-354" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load raw file, clean a bit and write clean file</span></span>
-<span id="cb26-355"><a href="#cb26-355" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-356"><a href="#cb26-356" aria-hidden="true" tabindex="-1"></a>Here we load the pre-processed Weight table, apply corrections and filtering at will, then write cleaned data to <span class="in">`data/clean/`</span> folder.</span>
-<span id="cb26-357"><a href="#cb26-357" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-358"><a href="#cb26-358" aria-hidden="true" tabindex="-1"></a>For correction, the function *clean_weight* automatically detect the refilling (that are defined by "jumps" of weight superior of input threshold), then reconnect the data to return only the weight corresponding to plant growth and transpiration. </span>
-<span id="cb26-359"><a href="#cb26-359" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-360"><a href="#cb26-360" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-361"><a href="#cb26-361" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw file</span></span>
-<span id="cb26-362"><a href="#cb26-362" aria-hidden="true" tabindex="-1"></a>W_raw <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"W_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-363"><a href="#cb26-363" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-364"><a href="#cb26-364" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>))</span>
-<span id="cb26-365"><a href="#cb26-365" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-366"><a href="#cb26-366" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleaning</span></span>
-<span id="cb26-367"><a href="#cb26-367" aria-hidden="true" tabindex="-1"></a>W_clean <span class="ot">&lt;-</span> <span class="fu">clean_weight</span>(W_raw, <span class="at">refill_th =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-368"><a href="#cb26-368" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;=</span> <span class="fu">as.POSIXct</span>(<span class="st">"2024-10-24 11:00:00"</span>))</span>
-<span id="cb26-369"><a href="#cb26-369" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-370"><a href="#cb26-370" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb26-371"><a href="#cb26-371" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> W_clean, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"W_clean.csv"</span>), <span class="at">row.names =</span> F)</span>
-<span id="cb26-372"><a href="#cb26-372" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-373"><a href="#cb26-373" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-374"><a href="#cb26-374" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4) Compute Transpiration rate</span></span>
-<span id="cb26-375"><a href="#cb26-375" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-376"><a href="#cb26-376" aria-hidden="true" tabindex="-1"></a>The function <span class="in">`compute_Tr`</span> computes transpiration rate $T_r$ from Weight time series using the formula</span>
-<span id="cb26-377"><a href="#cb26-377" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-378"><a href="#cb26-378" aria-hidden="true" tabindex="-1"></a>$$ </span>
-<span id="cb26-379"><a href="#cb26-379" aria-hidden="true" tabindex="-1"></a>T_{r, t} <span class="co">[</span><span class="ot">g \cdot h^{-1}</span><span class="co">]</span> = (W_{t-1} - W_{t}) / \Delta t  </span>
-<span id="cb26-380"><a href="#cb26-380" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb26-381"><a href="#cb26-381" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-382"><a href="#cb26-382" aria-hidden="true" tabindex="-1"></a>Pre-processed transpiration rate data is stored in <span class="in">`data/raw/`</span> folder.</span>
-<span id="cb26-383"><a href="#cb26-383" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-384"><a href="#cb26-384" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-385"><a href="#cb26-385" aria-hidden="true" tabindex="-1"></a><span class="co"># Load clean Weight file</span></span>
-<span id="cb26-386"><a href="#cb26-386" aria-hidden="true" tabindex="-1"></a>W_clean <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_clean, <span class="st">"W_clean.csv"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-387"><a href="#cb26-387" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-388"><a href="#cb26-388" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-389"><a href="#cb26-389" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">as.Date</span>(DateTime),</span>
-<span id="cb26-390"><a href="#cb26-390" aria-hidden="true" tabindex="-1"></a>         <span class="at">Hour =</span> <span class="fu">hour</span>(DateTime)</span>
-<span id="cb26-391"><a href="#cb26-391" aria-hidden="true" tabindex="-1"></a>         )</span>
-<span id="cb26-392"><a href="#cb26-392" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-393"><a href="#cb26-393" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute Tr using custom function</span></span>
-<span id="cb26-394"><a href="#cb26-394" aria-hidden="true" tabindex="-1"></a>Tr_raw <span class="ot">&lt;-</span> <span class="fu">compute_Tr</span>(<span class="at">W =</span> W_clean, <span class="at">th =</span> <span class="dv">20</span>, <span class="at">DT.format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)</span>
-<span id="cb26-395"><a href="#cb26-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-396"><a href="#cb26-396" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb26-397"><a href="#cb26-397" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> Tr_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"Tr_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
-<span id="cb26-398"><a href="#cb26-398" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-399"><a href="#cb26-399" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-400"><a href="#cb26-400" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load Tr raw from file</span></span>
-<span id="cb26-401"><a href="#cb26-401" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-402"><a href="#cb26-402" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
-<span id="cb26-403"><a href="#cb26-403" aria-hidden="true" tabindex="-1"></a><span class="co"># Read Tr raw fil from folder</span></span>
-<span id="cb26-404"><a href="#cb26-404" aria-hidden="true" tabindex="-1"></a>Tr_raw <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"Tr_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-405"><a href="#cb26-405" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-406"><a href="#cb26-406" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-407"><a href="#cb26-407" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)]) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-408"><a href="#cb26-408" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="st">"2024-10-25"</span>)</span>
-<span id="cb26-409"><a href="#cb26-409" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-410"><a href="#cb26-410" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-411"><a href="#cb26-411" aria-hidden="true" tabindex="-1"></a>Simple plot</span>
-<span id="cb26-412"><a href="#cb26-412" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-415"><a href="#cb26-415" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb26-416"><a href="#cb26-416" aria-hidden="true" tabindex="-1"></a>Tr_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> Tr_raw</span>
-<span id="cb26-417"><a href="#cb26-417" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"Tr"</span></span>
-<span id="cb26-418"><a href="#cb26-418" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
-<span id="cb26-419"><a href="#cb26-419" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">show.lines =</span> T</span>
-<span id="cb26-420"><a href="#cb26-420" aria-hidden="true" tabindex="-1"></a>                           ) <span class="sc">+</span></span>
-<span id="cb26-421"><a href="#cb26-421" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID) <span class="sc">+</span></span>
-<span id="cb26-422"><a href="#cb26-422" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Transpiration rate [g/h]"</span>)</span>
-<span id="cb26-423"><a href="#cb26-423" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-424"><a href="#cb26-424" aria-hidden="true" tabindex="-1"></a>Tr_plot</span>
-<span id="cb26-425"><a href="#cb26-425" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-426"><a href="#cb26-426" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"Tr_raw.png"</span>, </span>
-<span id="cb26-427"><a href="#cb26-427" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> Tr_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
-<span id="cb26-428"><a href="#cb26-428" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-429"><a href="#cb26-429" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-430"><a href="#cb26-430" aria-hidden="true" tabindex="-1"></a><span class="fu">## Make one plot with the 3 variables</span></span>
-<span id="cb26-431"><a href="#cb26-431" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-432"><a href="#cb26-432" aria-hidden="true" tabindex="-1"></a>Create a gigantic file with every time series measurement.</span>
-<span id="cb26-433"><a href="#cb26-433" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-434"><a href="#cb26-434" aria-hidden="true" tabindex="-1"></a>For that, we create temporary table by gathering variables into one key column (<span class="in">`Measure`</span>) and one value column (<span class="in">`Value`</span>).</span>
-<span id="cb26-435"><a href="#cb26-435" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-436"><a href="#cb26-436" aria-hidden="true" tabindex="-1"></a>Then we bind them by row. For better visualization, we create a new attribute <span class="in">`Plant_name`</span> that combine <span class="in">`Plant_ID`</span> and <span class="in">`Treatment`</span>.</span>
-<span id="cb26-437"><a href="#cb26-437" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-440"><a href="#cb26-440" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb26-441"><a href="#cb26-441" aria-hidden="true" tabindex="-1"></a>LWP_temp <span class="ot">&lt;-</span> LWP_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"LWP"</span>)] <span class="sc">%&gt;%</span> </span>
-<span id="cb26-442"><a href="#cb26-442" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(LWP, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) </span>
-<span id="cb26-443"><a href="#cb26-443" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-444"><a href="#cb26-444" aria-hidden="true" tabindex="-1"></a>SWP_temp <span class="ot">&lt;-</span> SWP_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"SWP"</span>)] <span class="sc">%&gt;%</span> </span>
-<span id="cb26-445"><a href="#cb26-445" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(SWP, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-446"><a href="#cb26-446" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">1000</span>)</span>
-<span id="cb26-447"><a href="#cb26-447" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-448"><a href="#cb26-448" aria-hidden="true" tabindex="-1"></a>W_temp   <span class="ot">&lt;-</span> W_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"Weight"</span>)] <span class="sc">%&gt;%</span> </span>
-<span id="cb26-449"><a href="#cb26-449" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(Weight, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-450"><a href="#cb26-450" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">1500</span>)</span>
-<span id="cb26-451"><a href="#cb26-451" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-452"><a href="#cb26-452" aria-hidden="true" tabindex="-1"></a>T_temp   <span class="ot">&lt;-</span> Tr_raw[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"Tr"</span>)] <span class="sc">%&gt;%</span> </span>
-<span id="cb26-453"><a href="#cb26-453" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(Tr, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-454"><a href="#cb26-454" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">10</span>)</span>
-<span id="cb26-455"><a href="#cb26-455" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-456"><a href="#cb26-456" aria-hidden="true" tabindex="-1"></a>TS_full <span class="ot">&lt;-</span> <span class="fu">rbind</span>(LWP_temp, SWP_temp) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-457"><a href="#cb26-457" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(T_temp) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-458"><a href="#cb26-458" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID, <span class="at">by =</span> <span class="st">"Plant_ID"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb26-459"><a href="#cb26-459" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Plant_name =</span> <span class="fu">paste0</span>(<span class="st">"Plant "</span>, Plant_ID, <span class="st">" | "</span>, Treatment))</span>
-<span id="cb26-460"><a href="#cb26-460" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb26-461"><a href="#cb26-461" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-462"><a href="#cb26-462" aria-hidden="true" tabindex="-1"></a>Generate the plot</span>
-<span id="cb26-463"><a href="#cb26-463" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-466"><a href="#cb26-466" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb26-467"><a href="#cb26-467" aria-hidden="true" tabindex="-1"></a>measures_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"LWP"</span> <span class="ot">=</span> <span class="st">"darkgreen"</span>, <span class="st">"SWP"</span> <span class="ot">=</span> <span class="st">"orange"</span>, <span class="st">"Tr"</span> <span class="ot">=</span> <span class="st">"blue"</span>)</span>
-<span id="cb26-468"><a href="#cb26-468" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-469"><a href="#cb26-469" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-470"><a href="#cb26-470" aria-hidden="true" tabindex="-1"></a>full_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> TS_full</span>
-<span id="cb26-471"><a href="#cb26-471" aria-hidden="true" tabindex="-1"></a>                             ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"Value"</span></span>
-<span id="cb26-472"><a href="#cb26-472" aria-hidden="true" tabindex="-1"></a>                             ,<span class="at">color =</span> <span class="st">"Measure"</span></span>
-<span id="cb26-473"><a href="#cb26-473" aria-hidden="true" tabindex="-1"></a>                             ) <span class="sc">+</span></span>
-<span id="cb26-474"><a href="#cb26-474" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-475"><a href="#cb26-475" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Show data</span></span>
-<span id="cb26-476"><a href="#cb26-476" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> Value, <span class="at">color =</span> Measure),</span>
-<span id="cb26-477"><a href="#cb26-477" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.25</span></span>
-<span id="cb26-478"><a href="#cb26-478" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">+</span></span>
-<span id="cb26-479"><a href="#cb26-479" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> Value, <span class="at">color =</span> Measure),</span>
-<span id="cb26-480"><a href="#cb26-480" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb26-481"><a href="#cb26-481" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-482"><a href="#cb26-482" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> measures_colors) <span class="sc">+</span></span>
-<span id="cb26-483"><a href="#cb26-483" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_name) <span class="sc">+</span></span>
-<span id="cb26-484"><a href="#cb26-484" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-485"><a href="#cb26-485" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set x limits and define the format of breaks</span></span>
-<span id="cb26-486"><a href="#cb26-486" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="co"># date_breaks = "1 day",</span></span>
-<span id="cb26-487"><a href="#cb26-487" aria-hidden="true" tabindex="-1"></a>                   <span class="at">date_labels =</span> <span class="st">"%d/%m"</span>,</span>
-<span id="cb26-488"><a href="#cb26-488" aria-hidden="true" tabindex="-1"></a>                   <span class="at">name =</span> <span class="st">"Date"</span>) <span class="sc">+</span> </span>
-<span id="cb26-489"><a href="#cb26-489" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-490"><a href="#cb26-490" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set y limits and add a secondary axis</span></span>
-<span id="cb26-491"><a href="#cb26-491" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">1.5</span>),</span>
-<span id="cb26-492"><a href="#cb26-492" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">bquote</span>(<span class="at">expr =</span> psi<span class="sc">~</span><span class="st">"[MPa]"</span>), </span>
-<span id="cb26-493"><a href="#cb26-493" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span>.<span class="sc">*</span><span class="dv">10</span>, <span class="at">name =</span> <span class="fu">bquote</span>(T[act]<span class="sc">~</span><span class="st">"["</span><span class="sc">*</span>gh<span class="sc">^-</span><span class="dv">1</span><span class="sc">*</span><span class="st">"]"</span>))</span>
-<span id="cb26-494"><a href="#cb26-494" aria-hidden="true" tabindex="-1"></a>                     ) </span>
-<span id="cb26-495"><a href="#cb26-495" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
-<span id="cb26-496"><a href="#cb26-496" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-497"><a href="#cb26-497" aria-hidden="true" tabindex="-1"></a>full_plot</span>
-<span id="cb26-498"><a href="#cb26-498" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-499"><a href="#cb26-499" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"Full_plot.png"</span>, <span class="at">plot =</span> full_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
-<span id="cb26-500"><a href="#cb26-500" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-501"><a href="#cb26-501" aria-hidden="true" tabindex="-1"></a><span class="fu">svg</span>(<span class="at">filename =</span> <span class="fu">paste0</span>(plot_path, <span class="st">"Full_plot.svg"</span>), <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
-<span id="cb26-502"><a href="#cb26-502" aria-hidden="true" tabindex="-1"></a>full_plot</span>
-<span id="cb26-503"><a href="#cb26-503" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span>
-<span id="cb26-504"><a href="#cb26-504" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-163"><a href="#cb26-163" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Realistic values of Leaf Water Potential ; here &gt; -2MPa</span>
+<span id="cb26-164"><a href="#cb26-164" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>WetBulb &gt; 0 (PSY1-LEAF manual)</span>
+<span id="cb26-165"><a href="#cb26-165" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>-1.5 &lt; dT &lt; 0.5 (Bourbia et al. 2021)</span>
+<span id="cb26-166"><a href="#cb26-166" aria-hidden="true" tabindex="-1"></a><span class="ss">  - </span>Battery level (in case there is issue when charging)</span>
+<span id="cb26-167"><a href="#cb26-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-168"><a href="#cb26-168" aria-hidden="true" tabindex="-1"></a>In addition, we developped a LWP cleaning algorith.</span>
+<span id="cb26-169"><a href="#cb26-169" aria-hidden="true" tabindex="-1"></a>It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.</span>
+<span id="cb26-170"><a href="#cb26-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-171"><a href="#cb26-171" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.na`</span> evaluates how many NAN are in the buffer. If there is more NAN than the <span class="in">`nan.th`</span> proportion, the buffer is discarded.</span>
+<span id="cb26-172"><a href="#cb26-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-173"><a href="#cb26-173" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.zero`</span> evaluates how many zeros are in the buffer. If there is more zeros than the <span class="in">`zero.th`</span> proportion, the buffer is discarded.</span>
+<span id="cb26-174"><a href="#cb26-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-175"><a href="#cb26-175" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.cycles`</span> evaluates if LWP at night is lesser than LWP at day. If the mean LWP at day is higher that the mean LWP at night multiplied by <span class="in">`cycle.alpha`</span>, the buffer is discarded.</span>
+<span id="cb26-176"><a href="#cb26-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-177"><a href="#cb26-177" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.slope`</span> evaluates the mean slope of the buffer via a linear model. If the absolute value of the slope is higher than <span class="in">`slope.th`</span>, the buffer is discarded.</span>
+<span id="cb26-178"><a href="#cb26-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-179"><a href="#cb26-179" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`check.level`</span> evaluates the statistical mean of the buffer compared to the mean of the other buffers. If $\mu_{LWP, i} &lt; \mu_{LWP} - \alpha \cdot \sigma_{LWP}$ or $\mu_{LWP, i} &gt; \mu_{LWP} + \alpha \cdot \sigma_{LWP}$ (with $\mu_{LWP}$ is the mean LWP for all buffers, $\mu_{LWP,i}$ is the mean LWP of the ith buffer, $\alpha$ is the unput multiplicator and $\sigma_{LWP}$ is the standard deviation of LWP), the buffer is discarded.</span>
+<span id="cb26-180"><a href="#cb26-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-181"><a href="#cb26-181" aria-hidden="true" tabindex="-1"></a>NB : for the dataset in example, data was already good so the application of LWP_algo don't improve the quality.</span>
+<span id="cb26-182"><a href="#cb26-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-183"><a href="#cb26-183" aria-hidden="true" tabindex="-1"></a>Finally, the clean dataframe is written to storage.</span>
+<span id="cb26-184"><a href="#cb26-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-185"><a href="#cb26-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-186"><a href="#cb26-186" aria-hidden="true" tabindex="-1"></a><span class="co"># LOAD RAW LWP</span></span>
+<span id="cb26-187"><a href="#cb26-187" aria-hidden="true" tabindex="-1"></a>LWP_raw <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"LWP_raw.csv"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-188"><a href="#cb26-188" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-189"><a href="#cb26-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-190"><a href="#cb26-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Plant_ID =</span> <span class="fu">as.factor</span>(Plant_ID)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-191"><a href="#cb26-191" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(LWP <span class="sc">&gt;</span> <span class="sc">-</span><span class="dv">2</span>) <span class="co"># Realistic values</span></span>
+<span id="cb26-192"><a href="#cb26-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-193"><a href="#cb26-193" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-194"><a href="#cb26-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-195"><a href="#cb26-195" aria-hidden="true" tabindex="-1"></a><span class="co"># CLEANING MANNUALLY</span></span>
+<span id="cb26-196"><a href="#cb26-196" aria-hidden="true" tabindex="-1"></a>LWP_clean1 <span class="ot">&lt;-</span> LWP_raw <span class="sc">%&gt;%</span> </span>
+<span id="cb26-197"><a href="#cb26-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(dT <span class="sc">&gt;=</span> <span class="sc">-</span><span class="fl">1.5</span> <span class="sc">&amp;</span> dT <span class="sc">&lt;=</span> <span class="fl">0.5</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-198"><a href="#cb26-198" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(WetBulb <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb26-199"><a href="#cb26-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-200"><a href="#cb26-200" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-201"><a href="#cb26-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-202"><a href="#cb26-202" aria-hidden="true" tabindex="-1"></a>LWP_clean2 <span class="ot">&lt;-</span> <span class="fu">clean.LWP</span>(<span class="at">LWP_data =</span> LWP_clean1,</span>
+<span id="cb26-203"><a href="#cb26-203" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.na     =</span> T,</span>
+<span id="cb26-204"><a href="#cb26-204" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.zero   =</span> T, </span>
+<span id="cb26-205"><a href="#cb26-205" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.cycles =</span> T, </span>
+<span id="cb26-206"><a href="#cb26-206" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.slope  =</span> T, </span>
+<span id="cb26-207"><a href="#cb26-207" aria-hidden="true" tabindex="-1"></a>                       <span class="at">check.level  =</span> T, </span>
+<span id="cb26-208"><a href="#cb26-208" aria-hidden="true" tabindex="-1"></a>                       <span class="at">nan.th       =</span> <span class="fl">0.5</span>, </span>
+<span id="cb26-209"><a href="#cb26-209" aria-hidden="true" tabindex="-1"></a>                       <span class="at">zero.th      =</span> <span class="fl">0.5</span>, </span>
+<span id="cb26-210"><a href="#cb26-210" aria-hidden="true" tabindex="-1"></a>                       <span class="at">cycle.alpha  =</span> <span class="fl">0.5</span>, </span>
+<span id="cb26-211"><a href="#cb26-211" aria-hidden="true" tabindex="-1"></a>                       <span class="at">slope.th     =</span> <span class="fl">0.00005</span>, </span>
+<span id="cb26-212"><a href="#cb26-212" aria-hidden="true" tabindex="-1"></a>                       <span class="at">level.alpha  =</span> <span class="dv">2</span>)</span>
+<span id="cb26-213"><a href="#cb26-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-214"><a href="#cb26-214" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-215"><a href="#cb26-215" aria-hidden="true" tabindex="-1"></a>p_comp <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> LWP_clean2</span>
+<span id="cb26-216"><a href="#cb26-216" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"LWP"</span></span>
+<span id="cb26-217"><a href="#cb26-217" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">color =</span> <span class="st">"Plant_ID"</span></span>
+<span id="cb26-218"><a href="#cb26-218" aria-hidden="true" tabindex="-1"></a>                         ,<span class="at">show.lines =</span> F</span>
+<span id="cb26-219"><a href="#cb26-219" aria-hidden="true" tabindex="-1"></a>                         ) <span class="sc">+</span></span>
+<span id="cb26-220"><a href="#cb26-220" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_raw, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb26-221"><a href="#cb26-221" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_clean1, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb26-222"><a href="#cb26-222" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> LWP_clean2, <span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP), <span class="at">color =</span> <span class="st">"green"</span>) <span class="sc">+</span></span>
+<span id="cb26-223"><a href="#cb26-223" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID) <span class="sc">+</span></span>
+<span id="cb26-224"><a href="#cb26-224" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Leaf Water Potantial [MPa]"</span>) </span>
+<span id="cb26-225"><a href="#cb26-225" aria-hidden="true" tabindex="-1"></a>p_comp</span>
+<span id="cb26-226"><a href="#cb26-226" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="fu">paste0</span>(plot_path, <span class="st">"LWP_comparison.png"</span>), <span class="at">plot =</span> p_comp</span>
+<span id="cb26-227"><a href="#cb26-227" aria-hidden="true" tabindex="-1"></a>       ,<span class="at">width =</span> <span class="dv">4</span>, <span class="at">height =</span> <span class="dv">3</span>)</span>
+<span id="cb26-228"><a href="#cb26-228" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-229"><a href="#cb26-229" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-230"><a href="#cb26-230" aria-hidden="true" tabindex="-1"></a><span class="co"># WRITE TO CLEAN</span></span>
+<span id="cb26-231"><a href="#cb26-231" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(LWP_clean2 <span class="sc">%&gt;%</span> </span>
+<span id="cb26-232"><a href="#cb26-232" aria-hidden="true" tabindex="-1"></a>            <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">"DateTime"</span>, <span class="st">"Plant_ID"</span>, <span class="st">"LWP"</span>))</span>
+<span id="cb26-233"><a href="#cb26-233" aria-hidden="true" tabindex="-1"></a>          ,<span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"LWP_clean.csv"</span>)</span>
+<span id="cb26-234"><a href="#cb26-234" aria-hidden="true" tabindex="-1"></a>          ,<span class="at">row.names =</span> F</span>
+<span id="cb26-235"><a href="#cb26-235" aria-hidden="true" tabindex="-1"></a>          )</span>
+<span id="cb26-236"><a href="#cb26-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-237"><a href="#cb26-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-238"><a href="#cb26-238" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load clean file</span></span>
+<span id="cb26-239"><a href="#cb26-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-240"><a href="#cb26-240" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-241"><a href="#cb26-241" aria-hidden="true" tabindex="-1"></a>LWP_clean <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_clean, <span class="st">"LWP_clean.csv"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-242"><a href="#cb26-242" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-243"><a href="#cb26-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-244"><a href="#cb26-244" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)])</span>
+<span id="cb26-245"><a href="#cb26-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-246"><a href="#cb26-246" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-247"><a href="#cb26-247" aria-hidden="true" tabindex="-1"></a>LWP_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> LWP_clean</span>
+<span id="cb26-248"><a href="#cb26-248" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"LWP"</span></span>
+<span id="cb26-249"><a href="#cb26-249" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
+<span id="cb26-250"><a href="#cb26-250" aria-hidden="true" tabindex="-1"></a>                            ) <span class="sc">+</span></span>
+<span id="cb26-251"><a href="#cb26-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
+<span id="cb26-252"><a href="#cb26-252" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> LWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
+<span id="cb26-253"><a href="#cb26-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID, <span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb26-254"><a href="#cb26-254" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Leaf Water Potantial [MPa]"</span>) </span>
+<span id="cb26-255"><a href="#cb26-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-256"><a href="#cb26-256" aria-hidden="true" tabindex="-1"></a><span class="co"># Show plot and save to file</span></span>
+<span id="cb26-257"><a href="#cb26-257" aria-hidden="true" tabindex="-1"></a>LWP_plot</span>
+<span id="cb26-258"><a href="#cb26-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-259"><a href="#cb26-259" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"LWP_clean.png"</span>, <span class="at">plot =</span> LWP_plot, </span>
+<span id="cb26-260"><a href="#cb26-260" aria-hidden="true" tabindex="-1"></a>       <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
+<span id="cb26-261"><a href="#cb26-261" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-262"><a href="#cb26-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-263"><a href="#cb26-263" aria-hidden="true" tabindex="-1"></a><span class="fu">## 2) LOAD SOIL WATER POTENTIAL DATA</span></span>
+<span id="cb26-264"><a href="#cb26-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-265"><a href="#cb26-265" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extract from sensor files and compile into a single raw file</span></span>
+<span id="cb26-266"><a href="#cb26-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-267"><a href="#cb26-267" aria-hidden="true" tabindex="-1"></a>SWP data is stored as a unique raw <span class="in">`.DAT`</span> file.\</span>
+<span id="cb26-268"><a href="#cb26-268" aria-hidden="true" tabindex="-1"></a>The function <span class="in">`load_SWP`</span> loads the file and convert it to a tibble.\</span>
+<span id="cb26-269"><a href="#cb26-269" aria-hidden="true" tabindex="-1"></a>The pre-processed file can then be stored in <span class="in">`data/raw/`</span> folder.\</span>
+<span id="cb26-270"><a href="#cb26-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-271"><a href="#cb26-271" aria-hidden="true" tabindex="-1"></a>Depending on the format of the <span class="in">`.DAT`</span> file, you may need to change the inputs :\</span>
+<span id="cb26-272"><a href="#cb26-272" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`path_SWP`</span> : Path to the folder containing the <span class="in">`.DAT`</span> files. \ </span>
+<span id="cb26-273"><a href="#cb26-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`sep`</span>      : Separator of column. By defaut is space, other used formats are <span class="in">`","`</span>, <span class="in">`";"`</span>.\</span>
+<span id="cb26-274"><a href="#cb26-274" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`skip`</span>     : Number of lines to skip. By default is zero.\</span>
+<span id="cb26-275"><a href="#cb26-275" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`filename`</span> : By default is null and the function scan every file of the folder. If <span class="in">`filename`</span> is specified, the function only loads the corresponding file.</span>
+<span id="cb26-276"><a href="#cb26-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-277"><a href="#cb26-277" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-278"><a href="#cb26-278" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract from DAT files</span></span>
+<span id="cb26-279"><a href="#cb26-279" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">load_SWP</span>(<span class="at">path_SWP =</span> path_SWP,</span>
+<span id="cb26-280"><a href="#cb26-280" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span>,</span>
+<span id="cb26-281"><a href="#cb26-281" aria-hidden="true" tabindex="-1"></a>                    <span class="at">skip =</span> <span class="dv">0</span></span>
+<span id="cb26-282"><a href="#cb26-282" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb26-283"><a href="#cb26-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-284"><a href="#cb26-284" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace Teros_ID by Plant_ID and set DateTime as POSIXct</span></span>
+<span id="cb26-285"><a href="#cb26-285" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">left_join</span>(SWP_raw, Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Teros"</span>)], <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"Teros_ID"</span> <span class="ot">=</span> <span class="st">"Teros"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-286"><a href="#cb26-286" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="fu">c</span>(<span class="st">"DateTime"</span>, <span class="st">"SWP"</span>, <span class="st">"Plant_ID"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-287"><a href="#cb26-287" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%d/%m/%Y %H:%M"</span>))</span>
+<span id="cb26-288"><a href="#cb26-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-289"><a href="#cb26-289" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb26-290"><a href="#cb26-290" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> SWP_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
+<span id="cb26-291"><a href="#cb26-291" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-292"><a href="#cb26-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-293"><a href="#cb26-293" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load raw file, clean it a bit and write to a clean file</span></span>
+<span id="cb26-294"><a href="#cb26-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-295"><a href="#cb26-295" aria-hidden="true" tabindex="-1"></a>Here we load the pre-processed SWP dataframe. Statistical or manual corrections can be done at will.\</span>
+<span id="cb26-296"><a href="#cb26-296" aria-hidden="true" tabindex="-1"></a>The final version of SWP data can then be written to <span class="in">`data/clean/`</span> folder.</span>
+<span id="cb26-297"><a href="#cb26-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-298"><a href="#cb26-298" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-299"><a href="#cb26-299" aria-hidden="true" tabindex="-1"></a><span class="co"># Load SWP_raw</span></span>
+<span id="cb26-300"><a href="#cb26-300" aria-hidden="true" tabindex="-1"></a>SWP_raw <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-301"><a href="#cb26-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-302"><a href="#cb26-302" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>))</span>
+<span id="cb26-303"><a href="#cb26-303" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-304"><a href="#cb26-304" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter data so DateTime match with LWP</span></span>
+<span id="cb26-305"><a href="#cb26-305" aria-hidden="true" tabindex="-1"></a>SWP_clean <span class="ot">&lt;-</span> SWP_raw <span class="sc">%&gt;%</span> </span>
+<span id="cb26-306"><a href="#cb26-306" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;=</span> <span class="fu">min</span>(LWP_clean<span class="sc">$</span>DateTime) <span class="sc">&amp;</span> DateTime <span class="sc">&lt;=</span> <span class="fu">max</span>(LWP_clean<span class="sc">$</span>DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-307"><a href="#cb26-307" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="fu">as.POSIXct</span>(<span class="st">"2024-10-25"</span>))</span>
+<span id="cb26-308"><a href="#cb26-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-309"><a href="#cb26-309" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb26-310"><a href="#cb26-310" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> SWP_clean, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"SWP_clean.csv"</span>), <span class="at">row.names =</span> F)</span>
+<span id="cb26-311"><a href="#cb26-311" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-312"><a href="#cb26-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-313"><a href="#cb26-313" aria-hidden="true" tabindex="-1"></a>Simple plot :</span>
+<span id="cb26-314"><a href="#cb26-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-315"><a href="#cb26-315" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-316"><a href="#cb26-316" aria-hidden="true" tabindex="-1"></a>SWP_clean <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"SWP_raw.csv"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-317"><a href="#cb26-317" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-318"><a href="#cb26-318" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-319"><a href="#cb26-319" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)]) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-320"><a href="#cb26-320" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="fu">as.Date</span>(<span class="st">"2024-10-25"</span>))</span>
+<span id="cb26-321"><a href="#cb26-321" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb26-322"><a href="#cb26-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-323"><a href="#cb26-323" aria-hidden="true" tabindex="-1"></a>SWP_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> SWP_clean</span>
+<span id="cb26-324"><a href="#cb26-324" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"SWP"</span></span>
+<span id="cb26-325"><a href="#cb26-325" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
+<span id="cb26-326"><a href="#cb26-326" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">facet =</span> <span class="st">"Plant_ID"</span></span>
+<span id="cb26-327"><a href="#cb26-327" aria-hidden="true" tabindex="-1"></a>                            ,<span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb26-328"><a href="#cb26-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> SWP, <span class="at">color =</span> Treatment)) <span class="sc">+</span></span>
+<span id="cb26-329"><a href="#cb26-329" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> SWP, <span class="at">color =</span> Treatment))</span>
+<span id="cb26-330"><a href="#cb26-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-331"><a href="#cb26-331" aria-hidden="true" tabindex="-1"></a><span class="co"># =========================================== #</span></span>
+<span id="cb26-332"><a href="#cb26-332" aria-hidden="true" tabindex="-1"></a>SWP_plot</span>
+<span id="cb26-333"><a href="#cb26-333" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"SWP_clean.png"</span>, <span class="at">plot =</span> SWP_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
+<span id="cb26-334"><a href="#cb26-334" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-335"><a href="#cb26-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-336"><a href="#cb26-336" aria-hidden="true" tabindex="-1"></a><span class="fu">## 3) EXTRACT WEIGHT DATA</span></span>
+<span id="cb26-337"><a href="#cb26-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-338"><a href="#cb26-338" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extract from sensor output files and compile into one single raw file</span></span>
+<span id="cb26-339"><a href="#cb26-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-340"><a href="#cb26-340" aria-hidden="true" tabindex="-1"></a>Weight data is stored as individual <span class="in">`.csv`</span> files in <span class="in">`data/raw/weight/`</span> folder.\</span>
+<span id="cb26-341"><a href="#cb26-341" aria-hidden="true" tabindex="-1"></a>Similarly to LWP and SWP, the function <span class="in">`load_W`</span> function extracts individual files and creates a single table.\</span>
+<span id="cb26-342"><a href="#cb26-342" aria-hidden="true" tabindex="-1"></a>The table is store in <span class="in">`data/raw/`</span>folder.</span>
+<span id="cb26-343"><a href="#cb26-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-344"><a href="#cb26-344" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-345"><a href="#cb26-345" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw data</span></span>
+<span id="cb26-346"><a href="#cb26-346" aria-hidden="true" tabindex="-1"></a>W_raw <span class="ot">&lt;-</span> <span class="fu">load_Weigth</span>(<span class="at">path =</span> path_weight, <span class="at">skip =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-347"><a href="#cb26-347" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Scale"</span>)], <span class="at">by =</span> <span class="st">"Scale"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-348"><a href="#cb26-348" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">as.Date</span>(Date, <span class="at">format =</span> <span class="st">"%d/%m/%Y"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb26-349"><a href="#cb26-349" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(<span class="st">"Scale"</span>))</span>
+<span id="cb26-350"><a href="#cb26-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-351"><a href="#cb26-351" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb26-352"><a href="#cb26-352" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> W_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"W_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
+<span id="cb26-353"><a href="#cb26-353" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-354"><a href="#cb26-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-355"><a href="#cb26-355" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load raw file, clean a bit and write clean file</span></span>
+<span id="cb26-356"><a href="#cb26-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-357"><a href="#cb26-357" aria-hidden="true" tabindex="-1"></a>Here we load the pre-processed Weight table, apply corrections and filtering at will, then write cleaned data to <span class="in">`data/clean/`</span> folder.</span>
+<span id="cb26-358"><a href="#cb26-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-359"><a href="#cb26-359" aria-hidden="true" tabindex="-1"></a>For correction, the function *clean_weight* automatically detect the refilling (that are defined by "jumps" of weight superior of input threshold), then reconnect the data to return only the weight corresponding to plant growth and transpiration. </span>
+<span id="cb26-360"><a href="#cb26-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-361"><a href="#cb26-361" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-362"><a href="#cb26-362" aria-hidden="true" tabindex="-1"></a><span class="co"># Load raw file</span></span>
+<span id="cb26-363"><a href="#cb26-363" aria-hidden="true" tabindex="-1"></a>W_raw <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"W_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-364"><a href="#cb26-364" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-365"><a href="#cb26-365" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>))</span>
+<span id="cb26-366"><a href="#cb26-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-367"><a href="#cb26-367" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleaning</span></span>
+<span id="cb26-368"><a href="#cb26-368" aria-hidden="true" tabindex="-1"></a>W_clean <span class="ot">&lt;-</span> <span class="fu">clean_weight</span>(W_raw, <span class="at">refill_th =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-369"><a href="#cb26-369" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;=</span> <span class="fu">as.POSIXct</span>(<span class="st">"2024-10-24 11:00:00"</span>))</span>
+<span id="cb26-370"><a href="#cb26-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-371"><a href="#cb26-371" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb26-372"><a href="#cb26-372" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> W_clean, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_clean, <span class="st">"W_clean.csv"</span>), <span class="at">row.names =</span> F)</span>
+<span id="cb26-373"><a href="#cb26-373" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-374"><a href="#cb26-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-375"><a href="#cb26-375" aria-hidden="true" tabindex="-1"></a><span class="fu">## 4) Compute Transpiration rate</span></span>
+<span id="cb26-376"><a href="#cb26-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-377"><a href="#cb26-377" aria-hidden="true" tabindex="-1"></a>The function <span class="in">`compute_Tr`</span> computes transpiration rate $T_r$ from Weight time series using the formula</span>
+<span id="cb26-378"><a href="#cb26-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-379"><a href="#cb26-379" aria-hidden="true" tabindex="-1"></a>$$ </span>
+<span id="cb26-380"><a href="#cb26-380" aria-hidden="true" tabindex="-1"></a>T_{r, t} <span class="co">[</span><span class="ot">g \cdot h^{-1}</span><span class="co">]</span> = (W_{t-1} - W_{t}) / \Delta t  </span>
+<span id="cb26-381"><a href="#cb26-381" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb26-382"><a href="#cb26-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-383"><a href="#cb26-383" aria-hidden="true" tabindex="-1"></a>Pre-processed transpiration rate data is stored in <span class="in">`data/raw/`</span> folder.</span>
+<span id="cb26-384"><a href="#cb26-384" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-385"><a href="#cb26-385" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-386"><a href="#cb26-386" aria-hidden="true" tabindex="-1"></a><span class="co"># Load clean Weight file</span></span>
+<span id="cb26-387"><a href="#cb26-387" aria-hidden="true" tabindex="-1"></a>W_clean <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_clean, <span class="st">"W_clean.csv"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-388"><a href="#cb26-388" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-389"><a href="#cb26-389" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-390"><a href="#cb26-390" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">as.Date</span>(DateTime),</span>
+<span id="cb26-391"><a href="#cb26-391" aria-hidden="true" tabindex="-1"></a>         <span class="at">Hour =</span> <span class="fu">hour</span>(DateTime)</span>
+<span id="cb26-392"><a href="#cb26-392" aria-hidden="true" tabindex="-1"></a>         )</span>
+<span id="cb26-393"><a href="#cb26-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-394"><a href="#cb26-394" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute Tr using custom function</span></span>
+<span id="cb26-395"><a href="#cb26-395" aria-hidden="true" tabindex="-1"></a>Tr_raw <span class="ot">&lt;-</span> <span class="fu">compute_Tr</span>(<span class="at">W =</span> W_clean, <span class="at">th =</span> <span class="dv">20</span>, <span class="at">DT.format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)</span>
+<span id="cb26-396"><a href="#cb26-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-397"><a href="#cb26-397" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb26-398"><a href="#cb26-398" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(<span class="at">x =</span> Tr_raw, <span class="at">file =</span> <span class="fu">paste0</span>(data_path_raw, <span class="st">"Tr_raw.csv"</span>), <span class="at">row.names =</span> F)</span>
+<span id="cb26-399"><a href="#cb26-399" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-400"><a href="#cb26-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-401"><a href="#cb26-401" aria-hidden="true" tabindex="-1"></a><span class="fu">### Load Tr raw from file</span></span>
+<span id="cb26-402"><a href="#cb26-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-403"><a href="#cb26-403" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, message=FALSE, warning=FALSE}</span></span>
+<span id="cb26-404"><a href="#cb26-404" aria-hidden="true" tabindex="-1"></a><span class="co"># Read Tr raw fil from folder</span></span>
+<span id="cb26-405"><a href="#cb26-405" aria-hidden="true" tabindex="-1"></a>Tr_raw <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">read.csv</span>(<span class="fu">paste0</span>(data_path_raw, <span class="st">"Tr_raw.csv"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-406"><a href="#cb26-406" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">anytime</span>(DateTime)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-407"><a href="#cb26-407" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(DateTime, <span class="at">format =</span> <span class="st">"%Y-%m-%d %H:%M:%S"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-408"><a href="#cb26-408" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"Treatment"</span>)]) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-409"><a href="#cb26-409" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DateTime <span class="sc">&gt;</span> <span class="st">"2024-10-25"</span>)</span>
+<span id="cb26-410"><a href="#cb26-410" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-411"><a href="#cb26-411" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-412"><a href="#cb26-412" aria-hidden="true" tabindex="-1"></a>Simple plot</span>
+<span id="cb26-413"><a href="#cb26-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-416"><a href="#cb26-416" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb26-417"><a href="#cb26-417" aria-hidden="true" tabindex="-1"></a>Tr_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> Tr_raw</span>
+<span id="cb26-418"><a href="#cb26-418" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"Tr"</span></span>
+<span id="cb26-419"><a href="#cb26-419" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">color =</span> <span class="st">"Treatment"</span></span>
+<span id="cb26-420"><a href="#cb26-420" aria-hidden="true" tabindex="-1"></a>                           ,<span class="at">show.lines =</span> T</span>
+<span id="cb26-421"><a href="#cb26-421" aria-hidden="true" tabindex="-1"></a>                           ) <span class="sc">+</span></span>
+<span id="cb26-422"><a href="#cb26-422" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_ID) <span class="sc">+</span></span>
+<span id="cb26-423"><a href="#cb26-423" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Transpiration rate [g/h]"</span>)</span>
+<span id="cb26-424"><a href="#cb26-424" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-425"><a href="#cb26-425" aria-hidden="true" tabindex="-1"></a>Tr_plot</span>
+<span id="cb26-426"><a href="#cb26-426" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-427"><a href="#cb26-427" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"Tr_raw.png"</span>, </span>
+<span id="cb26-428"><a href="#cb26-428" aria-hidden="true" tabindex="-1"></a>       <span class="at">plot =</span> Tr_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">9</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
+<span id="cb26-429"><a href="#cb26-429" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-430"><a href="#cb26-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-431"><a href="#cb26-431" aria-hidden="true" tabindex="-1"></a><span class="fu">## Make one plot with the 3 variables</span></span>
+<span id="cb26-432"><a href="#cb26-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-433"><a href="#cb26-433" aria-hidden="true" tabindex="-1"></a>Create a gigantic file with every time series measurement.</span>
+<span id="cb26-434"><a href="#cb26-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-435"><a href="#cb26-435" aria-hidden="true" tabindex="-1"></a>For that, we create temporary table by gathering variables into one key column (<span class="in">`Measure`</span>) and one value column (<span class="in">`Value`</span>).</span>
+<span id="cb26-436"><a href="#cb26-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-437"><a href="#cb26-437" aria-hidden="true" tabindex="-1"></a>Then we bind them by row. For better visualization, we create a new attribute <span class="in">`Plant_name`</span> that combine <span class="in">`Plant_ID`</span> and <span class="in">`Treatment`</span>.</span>
+<span id="cb26-438"><a href="#cb26-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-441"><a href="#cb26-441" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb26-442"><a href="#cb26-442" aria-hidden="true" tabindex="-1"></a>LWP_temp <span class="ot">&lt;-</span> LWP_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"LWP"</span>)] <span class="sc">%&gt;%</span> </span>
+<span id="cb26-443"><a href="#cb26-443" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(LWP, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) </span>
+<span id="cb26-444"><a href="#cb26-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-445"><a href="#cb26-445" aria-hidden="true" tabindex="-1"></a>SWP_temp <span class="ot">&lt;-</span> SWP_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"SWP"</span>)] <span class="sc">%&gt;%</span> </span>
+<span id="cb26-446"><a href="#cb26-446" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(SWP, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-447"><a href="#cb26-447" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">1000</span>)</span>
+<span id="cb26-448"><a href="#cb26-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-449"><a href="#cb26-449" aria-hidden="true" tabindex="-1"></a>W_temp   <span class="ot">&lt;-</span> W_clean[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"Weight"</span>)] <span class="sc">%&gt;%</span> </span>
+<span id="cb26-450"><a href="#cb26-450" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(Weight, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-451"><a href="#cb26-451" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">1500</span>)</span>
+<span id="cb26-452"><a href="#cb26-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-453"><a href="#cb26-453" aria-hidden="true" tabindex="-1"></a>T_temp   <span class="ot">&lt;-</span> Tr_raw[<span class="fu">c</span>(<span class="st">"Plant_ID"</span>, <span class="st">"DateTime"</span>, <span class="st">"Tr"</span>)] <span class="sc">%&gt;%</span> </span>
+<span id="cb26-454"><a href="#cb26-454" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(Tr, <span class="at">key =</span> <span class="st">"Measure"</span>, <span class="at">value =</span> <span class="st">"Value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-455"><a href="#cb26-455" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Value =</span> Value<span class="sc">/</span><span class="dv">10</span>)</span>
+<span id="cb26-456"><a href="#cb26-456" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-457"><a href="#cb26-457" aria-hidden="true" tabindex="-1"></a>TS_full <span class="ot">&lt;-</span> <span class="fu">rbind</span>(LWP_temp, SWP_temp) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-458"><a href="#cb26-458" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(T_temp) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-459"><a href="#cb26-459" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(Plants_ID, <span class="at">by =</span> <span class="st">"Plant_ID"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-460"><a href="#cb26-460" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Plant_name =</span> <span class="fu">paste0</span>(<span class="st">"Plant "</span>, Plant_ID, <span class="st">" | "</span>, Treatment))</span>
+<span id="cb26-461"><a href="#cb26-461" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb26-462"><a href="#cb26-462" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-463"><a href="#cb26-463" aria-hidden="true" tabindex="-1"></a>Generate the plot</span>
+<span id="cb26-464"><a href="#cb26-464" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-467"><a href="#cb26-467" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb26-468"><a href="#cb26-468" aria-hidden="true" tabindex="-1"></a>measures_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"LWP"</span> <span class="ot">=</span> <span class="st">"darkgreen"</span>, <span class="st">"SWP"</span> <span class="ot">=</span> <span class="st">"orange"</span>, <span class="st">"Tr"</span> <span class="ot">=</span> <span class="st">"blue"</span>)</span>
+<span id="cb26-469"><a href="#cb26-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-470"><a href="#cb26-470" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-471"><a href="#cb26-471" aria-hidden="true" tabindex="-1"></a>full_plot <span class="ot">&lt;-</span> <span class="fu">plot_timeseries</span>(<span class="at">data =</span> TS_full</span>
+<span id="cb26-472"><a href="#cb26-472" aria-hidden="true" tabindex="-1"></a>                             ,<span class="at">x =</span> <span class="st">"DateTime"</span>, <span class="at">y =</span> <span class="st">"Value"</span></span>
+<span id="cb26-473"><a href="#cb26-473" aria-hidden="true" tabindex="-1"></a>                             ,<span class="at">color =</span> <span class="st">"Measure"</span></span>
+<span id="cb26-474"><a href="#cb26-474" aria-hidden="true" tabindex="-1"></a>                             ) <span class="sc">+</span></span>
+<span id="cb26-475"><a href="#cb26-475" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-476"><a href="#cb26-476" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Show data</span></span>
+<span id="cb26-477"><a href="#cb26-477" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> Value, <span class="at">color =</span> Measure),</span>
+<span id="cb26-478"><a href="#cb26-478" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.25</span></span>
+<span id="cb26-479"><a href="#cb26-479" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">+</span></span>
+<span id="cb26-480"><a href="#cb26-480" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> DateTime, <span class="at">y =</span> Value, <span class="at">color =</span> Measure),</span>
+<span id="cb26-481"><a href="#cb26-481" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb26-482"><a href="#cb26-482" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-483"><a href="#cb26-483" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> measures_colors) <span class="sc">+</span></span>
+<span id="cb26-484"><a href="#cb26-484" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Plant_name) <span class="sc">+</span></span>
+<span id="cb26-485"><a href="#cb26-485" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-486"><a href="#cb26-486" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set x limits and define the format of breaks</span></span>
+<span id="cb26-487"><a href="#cb26-487" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_datetime</span>(<span class="co"># date_breaks = "1 day",</span></span>
+<span id="cb26-488"><a href="#cb26-488" aria-hidden="true" tabindex="-1"></a>                   <span class="at">date_labels =</span> <span class="st">"%d/%m"</span>,</span>
+<span id="cb26-489"><a href="#cb26-489" aria-hidden="true" tabindex="-1"></a>                   <span class="at">name =</span> <span class="st">"Date"</span>) <span class="sc">+</span> </span>
+<span id="cb26-490"><a href="#cb26-490" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-491"><a href="#cb26-491" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Set y limits and add a secondary axis</span></span>
+<span id="cb26-492"><a href="#cb26-492" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="fl">1.5</span>),</span>
+<span id="cb26-493"><a href="#cb26-493" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">bquote</span>(<span class="at">expr =</span> psi<span class="sc">~</span><span class="st">"[MPa]"</span>), </span>
+<span id="cb26-494"><a href="#cb26-494" aria-hidden="true" tabindex="-1"></a>                     <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span>.<span class="sc">*</span><span class="dv">10</span>, <span class="at">name =</span> <span class="fu">bquote</span>(T[act]<span class="sc">~</span><span class="st">"["</span><span class="sc">*</span>gh<span class="sc">^-</span><span class="dv">1</span><span class="sc">*</span><span class="st">"]"</span>))</span>
+<span id="cb26-495"><a href="#cb26-495" aria-hidden="true" tabindex="-1"></a>                     ) </span>
+<span id="cb26-496"><a href="#cb26-496" aria-hidden="true" tabindex="-1"></a><span class="do">################################################################################</span></span>
+<span id="cb26-497"><a href="#cb26-497" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-498"><a href="#cb26-498" aria-hidden="true" tabindex="-1"></a>full_plot</span>
+<span id="cb26-499"><a href="#cb26-499" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-500"><a href="#cb26-500" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">filename =</span> <span class="st">"Full_plot.png"</span>, <span class="at">plot =</span> full_plot, <span class="at">device =</span> <span class="st">"png"</span>, <span class="at">path =</span> plot_path, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
+<span id="cb26-501"><a href="#cb26-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-502"><a href="#cb26-502" aria-hidden="true" tabindex="-1"></a><span class="fu">svg</span>(<span class="at">filename =</span> <span class="fu">paste0</span>(plot_path, <span class="st">"Full_plot.svg"</span>), <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
+<span id="cb26-503"><a href="#cb26-503" aria-hidden="true" tabindex="-1"></a>full_plot</span>
+<span id="cb26-504"><a href="#cb26-504" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span>
+<span id="cb26-505"><a href="#cb26-505" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

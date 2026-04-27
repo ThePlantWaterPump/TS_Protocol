@@ -158,10 +158,14 @@ Once the raw files are compiled, we can simply load the processed csv file.
 NB : each time we load the raw.csv files, we need to format correctly the DateTime column.
 
 Data must be filtered by :
-  - Realistic values of Leaf Water Potential ; here > -2MPa
-  - WetBulb > 0 (PSY1-LEAF manual)
-  - -1.5 < dT < 0.5 (Bourbia et al. 2021)
-  - Battery level (in case there is issue when charging)
+
+  -   Realistic values of Leaf Water Potential ; here > -2MPa
+  
+  -   WetBulb > 0 (PSY1-LEAF manual)
+  
+  -   -1.5 < dT < 0.5 (Bourbia et al. 2021)
+  
+  -   Battery level (in case there is issue when charging)
 
 In addition, we developped a LWP cleaning algorith.
 It consists of creating buffers per day, and for each buffer we run a bunch of tests to check if we want to keep the buffer of not.
