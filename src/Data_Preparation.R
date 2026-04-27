@@ -1,6 +1,8 @@
-# ============================================================================ #
+################################################################################
 
-load_psy_file <- function(file){
+load_psy_file <- function(file, 
+                          columns, 
+                          colnames){
   #' Simple function to extract data from raw CSV files for LWP
   #' @param file the path and the file name
   
@@ -26,36 +28,44 @@ load_psy_file <- function(file){
       next
     }
     
-    data_clean <- rbind(data_clean, row_temp2[c(1, 2, 6)])
+    data_clean <- rbind(data_clean, row_temp2[columns])
     
   }
   
-  colnames(data_clean) <- c("Date","Time", "LWP")  # Rename columns
-  
+  colnames(data_clean) <- c(colnames)  # Rename columns
+
   data_clean$LWP <- as.numeric(data_clean$LWP)
   
   # Define DateTime in POSIXct format
   data_clean <- data_clean %>% mutate(DateTime = as.POSIXct(paste0(Date, " ", Time), 
                                                             format="%d/%m/%Y %H:%M:%S")
-  )
+                                      )
   
   return(data_clean)
 }
 
-# ============================================================================ #
+################################################################################
 
-load_LWP <- function(path){
+load_LWP <- function(path, 
+                     sep = ",", 
+                     columns = c(1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12),
+                     colnames = c("Date", "Time","Chambertemp", "dT",
+                                  "WetBulb", "LWP", "Intercept", "Slope", 
+                                  "Correction_dT", "Correctionfactor", "BatteryLevel")
+                     ){
   #' Loop function to apply load_psy_file on every csv file of the path
   #' @param path Folder path in wich we want to compile every csv file.
   #' 
   
-  ls <- list.files(path)
+  ls <- list.files(path, pattern = ".CSV")
   
   LWP_data <- tibble()
   for(i in ls){
     cat("Loading ", i, "\n")
     sensor.name       <- strsplit(i, split = ".CSV")[[1]]   # Extract sensor name from filename
-    LWP_temp          <- load_psy_file(file = paste0(path, i))
+    LWP_temp          <- load_psy_file(file = paste0(path, i), 
+                                       columns = columns,
+                                       colnames = colnames)
     # LWP_temp$Plant_ID <- Plants_ID$Plant[Plants_ID$PSY == sensor.name] 
     LWP_temp$PSY      <- sensor.name
     LWP_data          <- rbind(LWP_data, LWP_temp)
@@ -63,49 +73,35 @@ load_LWP <- function(path){
   return(LWP_data)
 }
 
-# ============================================================================ #
+################################################################################
 
-load_SWP <- function(path_SWP, sep = "\t", skip = 0, file = NULL){
-  #' @description
-    #' Load Soil Water Potential data from .DAT file.
-  #' @param path_SWP Path to folder where .DAT files are stored.
-  #' @param sep Character string. Separator of column in raw file. By default is space.
-  #' @param skip Number of rows from the .DAT file to skip. Default is zero.
-  #' @param file Default is NULL and the function load every .DAT file in path_SWP. If specified, only load the corresponding file.
-  #' @return A tibble containing 'DateTime', 'Teros_ID' and 'SWP columns'.
-    
-  # Scan folder or load specified file?
-  if(!is.null(file)){
-    ls <- file
-  }else{
-    ls <- list.files(path_SWP, pattern = ".dat") 
-  }
+load_SWP <- function(path_SWP, sep = "\t", skip = 0){
   
-  # Initialization
+  ls <- list.files(path_SWP, pattern = ".dat")
+  
   SWP_raw <- tibble()
   
-  # Loop for file
   for(file in ls){
     
     cat("Loading ", file, "\n")
     
     # Find column names by reading the first row of the DAT file : 
-    preview      <- read.table(paste0(path_SWP, file), sep = sep, nrows = 5, skip = skip)
+    preview <- read.table(paste0(path_SWP, file), sep = sep, nrows = 5, skip = skip)
+    # preview <- readLines(paste0(path_SWP, file), n = 5)  # Read first few lines
+    
     header_line  <- which(preview$V1 == "TIMESTAMP")  # Find the first non-empty row
-    column_names <- unlist(preview[header_line,])     # Split by tab
+    column_names <- unlist(preview[header_line,])  # Split by tab
     
     # Read file
-    data         <- read.table(file = paste0(path_SWP, file), 
-                               sep = sep, 
-                               header = T, skip = skip + 3, 
-                               stringsAsFactors = FALSE)
+    data <- read.table(file = paste0(path_SWP, file), 
+                       sep = sep, header = T, skip = skip + 3, stringsAsFactors = FALSE)
     
     # Change column names
     colnames(data) <- column_names
     
     # Loop through the columns. If the column name contains "Tension", extract the Teros_ID from it.
     SWP_temp <- tibble()
-    coln     <- colnames(data)
+    coln <- colnames(data)
     for(col_i in coln){
       
       if(is.na(strsplit(col_i, split = "Tension")[[1]][1])){
@@ -135,9 +131,9 @@ load_SWP <- function(path_SWP, sep = "\t", skip = 0, file = NULL){
   
 }
 
-# ============================================================================ #
+################################################################################
 
-load_W <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
+load_Weigth <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
   
   lf <- list.files(path, pattern = ".csv")
   
@@ -150,7 +146,7 @@ load_W <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
   # Collect all
   for(f in lf){
     
-    # print(f)
+    cat("Loading ",f, "\n")
     scale_id <- str_split(f, pattern = ".csv")[[1]][1]
     
     temp <- read.csv(paste0(path, f), sep = ",", header = T)
@@ -161,7 +157,6 @@ load_W <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
                      Scale    = scale_id)
     
     W_data <- rbind(W_data, W_temp)
-
   }
   
   # COnvert datetime to posixc
@@ -176,9 +171,34 @@ load_W <- function(path, skip = 0, DT.format = "%d/%m/%Y %H:%M:%S"){
   return(W_data)
 }
 
-# ============================================================================ #
+################################################################################
 
+# trimW <- function(data, weight_col = "Weight") {
+#   # Nettoyer les noms de colonnes au cas où
+#   colnames(data) <- trimws(colnames(data))
+#   
+#   if (!(weight_col %in% colnames(data))) {
+#     stop(paste("Column", weight_col, "not found in dataset"))
+#   }
+#   
+#   data %>%
+#     arrange(DateTime) %>%
+#     mutate(
+#       delta = !!sym(weight_col) - lag(!!sym(weight_col))
+#     ) %>%
+#     filter(
+#       !!sym(weight_col) >= 2000,
+#       !!sym(weight_col) <= 4000,
+#       is.na(delta) | (delta > -75 & delta < 1500)
+#     ) %>%
+#     select(-delta)
+# }
+
+################################################################################
 compute_Tr <- function(W, th, DT.format = "%d-%m-%y %H:%M:%S"){
+  #' @description
+    #' A short description...
+    #' 
   
   Tr_raw <- W[order(W$DateTime),]
   
@@ -193,7 +213,8 @@ compute_Tr <- function(W, th, DT.format = "%d-%m-%y %H:%M:%S"){
     mutate(dW = lag(Med_W) - Med_W ,
            dt = DateTime - lag(DateTime)) %>% 
     filter(abs(dW) < th) %>% 
-    mutate(Tr = dW/as.numeric(dt)) # g/h
+    mutate(Tr = dW/as.numeric(dt))%>%   # g/h
+    filter(Tr >= 0)  # Remove negative Tr values
   
   if(any(sapply(Tr_data$DateTime, is.na))){
     warning("\n There are NULL values in DateTime. Check DateTime format.")
@@ -203,4 +224,68 @@ compute_Tr <- function(W, th, DT.format = "%d-%m-%y %H:%M:%S"){
   
 }
 
-# ============================================================================ #
+################################################################################
+process_hourly <- function(df, group_var = NULL, value_var) {
+  
+  if(!("DateTime" %in% colnames(df))){
+    stop("No DateTime column found in input df.")
+  }
+  
+  df %>%
+    mutate(
+      Date = as.Date(DateTime),
+      Hour = hour(DateTime)
+    ) %>%
+    group_by(!!!syms(group_var), Date, Hour) %>%
+    summarise(
+      Mean   = mean({{ value_var }}, na.rm = TRUE),
+      SD     = sd({{ value_var }}, na.rm = TRUE),
+      Median = median({{ value_var }}, na.rm = TRUE),
+      MAD    = mad({{ value_var }}, na.rm = TRUE)
+    ) %>%
+    ungroup() %>%
+    mutate(
+      DateTime := as.POSIXct(
+        paste0(Date, " ", sprintf("%02d:00:00", Hour)),
+        format = "%Y-%m-%d %H:%M:%S"
+      )
+    )
+}
+
+################################################################################
+load_csv_custom <- function(file, anytime = F){
+  
+  df <- read.csv(file)
+  
+  if(anytime){
+    df <- df %>% mutate(DateTime = anytime(DateTime))
+  }
+  
+  df <- df %>% 
+    mutate(
+      DateTime = ifelse(
+        grepl(" ", DateTime),
+        as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+        as.POSIXct(paste(DateTime, "00:00:00"), format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+        ) 
+      ) %>% 
+    mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))
+  # %>% mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")
+  
+  return(df)
+}
+################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
