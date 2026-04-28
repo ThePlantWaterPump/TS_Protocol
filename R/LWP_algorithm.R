@@ -1,3 +1,54 @@
+#' Apply LWP cleaning algorithm. 
+#' 
+#' @param LWP_data LWP data to clean. Should contain columns "Plant_ID", "DateTime", and var_name.
+#' @param var_name Name of the column to clean. By default "LWP".
+#' @param Plants_ID Optional : Metadata of plant_id.
+#' @param check.na Set to TRUE to clean for NA.
+#' @param check.zero Set to TRUE to clean for zeros.
+#' @param check.cycles Set to TRUE to check that day/night cycle are respected.
+#' @param check.levels Set to TRUE to check that the buffer level is okey.
+#' @param nan.th Threshold for tolerance of nan values per buffer. 
+#' @param zero.th Threshold for tolerance of zero values per buffer.
+#' @param cycle.alpha Factor of discrimination between day and night. (e.g. mean day values should be < cycle.alpha * mean night values)
+#' @param slope.th Threshold for slope tolerance per buffer.
+#' @param level.alpha Threshold for tolerance of mean level of the buffer compared to all buffers. 
+#' 
+clean.LWP <- function(LWP_data, 
+                      var_name     = "LWP",
+                      Plants_ID    = NULL, 
+                      check.na     = T, 
+                      check.zero   = T, 
+                      check.cycles = T, 
+                      check.slope  = T, 
+                      check.level  = T, 
+                      nan.th       = 0.5, 
+                      zero.th      = 0.5, 
+                      cycle.alpha  = 1.15, 
+                      slope.th     = -0.1, 
+                      level.alpha  = 10){
+  
+  Buffer_list <- create_buffers(LWP_data     = LWP_data, 
+                                var_name = var_name,
+                                Plants_ID    = Plants_ID,
+                                check.na     = check.na,
+                                check.zero   = check.zero, 
+                                check.cycles = check.cycles, 
+                                check.slope  = check.slope, 
+                                check.level  = check.level, 
+                                nan.th       = nan.th, 
+                                zero.th      = zero.th, 
+                                cycle.alpha  = cycle.alpha, 
+                                slope.th     = slope.th, 
+                                level.alpha  = level.alpha) 
+  
+  data_clean <- merge_buffer(Buffer_list)
+  
+  return(data_clean)
+  
+}
+
+################################################################################
+
 create_buffers <- function(LWP_data,
                            Plants_ID = NULL,
                            var_name = "LWP",
@@ -99,7 +150,7 @@ create_buffers <- function(LWP_data,
   return(Buffer_list)
 }
 
-#===============================================================================
+################################################################################
 check_nan <- function(Buffer, var_name, threshold = 0.5){
   check <- T
   if(any(is.na(Buffer[[var_name]])) && (sum(is.na(Buffer[[var_name]]))/length(Buffer[[var_name]])) > threshold){
@@ -109,7 +160,7 @@ check_nan <- function(Buffer, var_name, threshold = 0.5){
   return(check)
 }
 
-#===============================================================================
+################################################################################
 check_zero <- function(Buffer, var_name, threshold = 0.5){
   check <- T
   if(any(Buffer[[var_name]] == 0) && sum(Buffer[[var_name]] == 0, na.rm = TRUE)/length(Buffer[[var_name]]) > threshold){
@@ -119,7 +170,7 @@ check_zero <- function(Buffer, var_name, threshold = 0.5){
   return(check)
 }
 
-#===============================================================================
+################################################################################
 check_cycle <- function(Buffer, var_name, alpha){
   check      <- T
   mean_day   <- mean(Buffer[[var_name]][Buffer$Time > "06:00:00" & Buffer$Time <= "18:00:00"])
@@ -136,7 +187,7 @@ check_cycle <- function(Buffer, var_name, alpha){
   return(check)
 }
 
-#===============================================================================
+################################################################################
 check_slope <- function(Buffer, var_name, threshold = 10){
   check <- T
   lm <- lm(data = Buffer, formula = as.formula(paste(var_name, "~ DateTime")))
@@ -147,7 +198,7 @@ check_slope <- function(Buffer, var_name, threshold = 10){
   return(check)
 }
 
-#===============================================================================
+################################################################################
 check_level2 <- function(Buffer_list, var_name, alpha = 10){
   Buffer_list2 <- list()
   stats <- tibble()
@@ -194,7 +245,7 @@ check_level2 <- function(Buffer_list, var_name, alpha = 10){
   return(Buffer_list2)
 }
 
-# ==============================================================================
+################################################################################
 
 merge_buffer <- function(Buffer_list){
   Buffer_data <- tibble()

@@ -1,3 +1,38 @@
+#' Destructive Plot with Boxplots and Points
+#'
+#' This function creates a destructive plot combining boxplots and points,
+#' allowing for detailed visualization of data distributions and individual data points.
+#' It is particularly useful for comparing groups and identifying outliers.
+#'
+#' @param data A data frame containing the variables to be plotted.
+#' @param x The variable to map on the x-axis. Should be a column name in `data`.
+#' @param y The variable to map on the y-axis. Should be a column name in `data`.
+#' @param fill The variable to use for filling the boxplots. Defaults to `x`.
+#' @param shape The variable to map to the shape of the points. If `NULL`, points are not shaped.
+#' @param color_palette A vector of colors to use for the plot. If `NULL`, the default color palette is used.
+#' @param x_lab The label for the x-axis. Defaults to "x".
+#' @param y_lab The label for the y-axis. Defaults to "y".
+#' @param facet The variable to facet the plot by. If `NULL`, no faceting is applied.
+#' @param facet_grid A formula for faceting the plot into a grid. If `NULL`, no grid faceting is applied.
+#' @param title The title of the plot. If `NULL`, no title is displayed.
+#' @param show.points A logical value indicating whether to display individual points. Defaults to `TRUE`.
+#' @param ncol The number of columns for faceting. Defaults to 1.
+#'
+#' @return A `ggplot` object representing the destructive plot.
+#'
+#' @examples
+#' # Example usage:
+#' data(mtcars)
+#' plot_destructive(mtcars, x = "cyl", y = "mpg", fill = "cyl", shape = "gear")
+#'
+#' @importFrom rlang sym
+#' @importFrom ggplot2 ggplot aes geom_boxplot geom_point facet_wrap facet_grid ggtitle
+#' @importFrom ggplot2 scale_color_manual scale_fill_manual theme element_blank
+#' @importFrom ggbeeswarm position_quasirandom
+#' @importFrom ggthemes theme_few
+#'
+#' @export
+#' 
 plot_destructive <- function(data, 
                              x, 
                              y,

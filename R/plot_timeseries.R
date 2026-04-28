@@ -1,4 +1,20 @@
-# Custom function to plot timeseries with day-night visualization.
+#' Custom function to plot timeseries with day-night visualization.
+#' 
+#' @param data The input dataframe, containing at least a DateTime column and a y column
+#' @param x The name of the column to be used as x variable. The values in it should be in POSIXct format.
+#' @param y The name of the column to be used as y. Values should be numeric.
+#' @param color The name of the column to be used as color factor. Values should be as factor.
+#' @param color_palette A vector containing colors per level of color.
+#' @param mean If provided, show lines
+#' @param sd If provided, show ribbon with ymin = mean-sd and ymax = mean-sd
+#' @param facet If provvided, will facet the graph with the given column. 
+#' @param ncol If facet is provided, will fix the number of columns of the facet. 
+#' @param light.hours Vector of length 2 containing the start and end time (in %H:%M:%S format) of the lighting period.
+#' @param light.rect Boolean. If set to FALSE, will hide the day-night visualization.
+#' @param show.lines Boolean. If set to TRUE, will automatically plot data from "x" and "y" column names.
+#'
+#' @return A `ggplot` object representing the destructive plot.
+#'
 plot_timeseries <- function(data, 
                             x, 
                             y,
@@ -15,18 +31,7 @@ plot_timeseries <- function(data,
                             light.rect    = TRUE,
                             show.lines    = FALSE
 ) {
-  #'@param data The input dataframe, containing at least a DateTime column and a y column
-  #'@param x The name of the column to be used as x variable. The values in it should be in POSIXct format.
-  #'@param y The name of the column to be used as y. Values should be numeric.
-  #'@param color The name of the column to be used as color factor. Values should be as factor.
-  #'@param color_palette A vector containing colors per level of color.
-  #'@param mean If provided, show lines
-  #'@param sd If provided, show ribbon with ymin = mean-sd and ymax = mean-sd
-  #'@param facet If provvided, will facet the graph with the given column. 
-  #'@param ncol If facet is provided, will fix the number of columns of the facet. 
-  #'@param light.hours Vector of length 2 containing the start and end time (in %H:%M:%S format) of the lighting period.
-  #'@param light.rect Boolean. If set to FALSE, will hide the day-night visualization.
-  #'@param show.lines Boolean. If set to TRUE, will automatically plot data from "x" and "y" column names.
+  
   
   p <- ggplot(data) 
   
