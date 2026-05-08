@@ -78,9 +78,10 @@ library(anytime)
 library(ggthemes)
 
 # LOAD UTILITARY FUNCTIONS IN SRC FOLDER
-for(i in list.files("./src/", pattern = ".R")){
+function_path <- "./R/"
+for(i in list.files(function_path, pattern = ".R")){
   print(i)
-  source(paste0("./src/", i))
+  source(paste0(function_path, i))
 }
 
 # SET DIRECTORIES
@@ -530,3 +531,5 @@ svg(filename = paste0(plot_path, "Full_plot.svg"), width = 7, height = 5)
 full_plot
 dev.off()
 ```
+
+
