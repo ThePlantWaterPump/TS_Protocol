@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: sentence
----
-
 ## Time-series measurements to study plant hydraulic status : Codes to extract, compile and clean data about Leaf Water Potential, Soil Water Potential and Weight.
 
 [![DOI](https://zenodo.org/badge/934849547.svg)](https://doi.org/10.5281/zenodo.17158114)
