@@ -251,15 +251,18 @@ p_comp <- plot_timeseries(data = LWP_clean2
                          ,x = "DateTime", y = "LWP"
                          ,color = "Plant_ID"
                          ,show.lines = F
+                         ,x_lab = "Date", y_lab = "Leaf Water Potantial [MPa]"
                          ) +
   geom_line(data = LWP_raw, aes(x = DateTime, y = LWP), color = "red") +
   geom_line(data = LWP_clean1, aes(x = DateTime, y = LWP), color = "orange") +
   geom_line(data = LWP_clean2, aes(x = DateTime, y = LWP), color = "green") +
-  facet_wrap(~Plant_ID) +
-  ylab("Leaf Water Potantial [MPa]") 
+  facet_wrap(~Plant_ID)
+
 p_comp
-ggsave(filename = paste0(plot_path, "LWP_comparison.png"), plot = p_comp
-       ,width = 4, height = 3)
+ggsave(filename = paste0(plot_path, "LWP_comparison.png")
+       ,plot = p_comp
+       ,width = 4
+       ,height = 3)
 ################################################################################
 
 # WRITE TO CLEAN
