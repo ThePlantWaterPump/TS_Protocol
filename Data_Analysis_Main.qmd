@@ -247,16 +247,34 @@ LWP_clean2 <- clean.LWP(LWP_data = LWP_clean1,
                        level.alpha  = 2)
 
 ################################################################################
-p_comp <- plot_timeseries(data = LWP_clean2
+# Create temp dataframes
+data2plot0 <- LWP_raw |> 
+  left_join(Plants_ID[c("Plant_ID", "Treatment")] |> mutate(Plant_ID = as.factor(Plant_ID)), 
+            by = "Plant_ID") |> 
+  mutate(Plant_name = as.factor(paste0("Plant ", Plant_ID, " | ", Treatment)))
+
+data2plot1 <- LWP_clean1 |> 
+  left_join(Plants_ID[c("Plant_ID", "Treatment")] |> mutate(Plant_ID = as.factor(Plant_ID)), 
+            by = "Plant_ID") |> 
+  mutate(Plant_name = as.factor(paste0("Plant ", Plant_ID, " | ", Treatment)))
+
+data2plot2 <- LWP_clean2 |> 
+  left_join(Plants_ID[c("Plant_ID", "Treatment")] |> mutate(Plant_ID = as.factor(Plant_ID)), 
+            by = "Plant_ID") |> 
+  mutate(Plant_name = as.factor(paste0("Plant ", Plant_ID, " | ", Treatment)))
+
+# Make plot
+p_comp <- plot_timeseries(data = data2plot0
                          ,x = "DateTime", y = "LWP"
                          ,color = "Plant_ID"
                          ,show.lines = F
                          ,x_lab = "Date", y_lab = "Leaf Water Potantial [MPa]"
                          ) +
-  geom_line(data = LWP_raw, aes(x = DateTime, y = LWP), color = "red") +
-  geom_line(data = LWP_clean1, aes(x = DateTime, y = LWP), color = "orange") +
-  geom_line(data = LWP_clean2, aes(x = DateTime, y = LWP), color = "green") +
-  facet_wrap(~Plant_ID)
+  geom_line(data = data2plot0, aes(x = DateTime, y = LWP), color = "red") +
+  geom_line(data = data2plot1, aes(x = DateTime, y = LWP), color = "orange") +
+  geom_line(data = data2plot2, aes(x = DateTime, y = LWP), color = "green") +
+  facet_wrap(~Plant_name) +
+  scale_y_continuous(bquote(expr = psi~"[MPa]"))
 
 p_comp
 ggsave(filename = paste0(plot_path, "LWP_comparison.png")
@@ -350,7 +368,7 @@ write.csv(x = SWP_clean, file = paste0(data_path_clean, "SWP_clean.csv"), row.na
 Simple plot :
 
 ```{r, message=FALSE, warning=FALSE}
-SWP_clean <- read.csv(paste0(data_path_raw, "SWP_raw.csv")) %>% 
+SWP_clean <- read.csv(paste0(data_path_clean, "SWP_clean.csv")) %>% 
   mutate(DateTime = anytime(DateTime)) %>% 
   mutate(DateTime = as.POSIXct(DateTime, format = "%Y-%m-%d %H:%M:%S")) %>% 
   left_join(Plants_ID[c("Plant_ID", "Treatment")]) %>% 
@@ -491,11 +509,15 @@ TS_full <- rbind(LWP_temp, SWP_temp) %>%
   rbind(T_temp) %>% 
   left_join(Plants_ID, by = "Plant_ID") %>% 
   mutate(Plant_name = paste0("Plant ", Plant_ID, " | ", Treatment))
+
+write.csv(x = TS_full, file = paste0(data_path_clean, "TS_full.csv"), row.names = F)
 ```
 
 Generate the plot
 
 ```{r}
+TS_full <- load_csv_custom(file = paste0(data_path_clean, "TS_full.csv"))
+
 measures_colors <- c("LWP" = "darkgreen", "SWP" = "orange", "Tr" = "blue")
 
 ################################################################################
